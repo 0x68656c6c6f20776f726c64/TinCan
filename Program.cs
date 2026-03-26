@@ -28,7 +28,7 @@ class Program
         Console.WriteLine("==================================================");
 
         var settings = LoadSettings();
-        var projectDir = AppContext.BaseDirectory;
+        var projectDir = Directory.GetCurrentDirectory();
         var scheduler = new Scheduler(settings, projectDir);
         var intervalMinutes = scheduler.IntervalMinutes;
 

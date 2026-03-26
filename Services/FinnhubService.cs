@@ -21,6 +21,7 @@ public class FinnhubService
     public async Task<StockPrice?> FetchPriceAsync(string symbol)
     {
         var url = $"https://finnhub.io/api/v1/quote?symbol={symbol}&token={_apiKey}";
+
         var response = await _http.GetStringAsync(url);
         var data = JObject.Parse(response);
         var price = data["c"]?.Value<double>() ?? 0;

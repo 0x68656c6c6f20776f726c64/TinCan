@@ -20,8 +20,11 @@ public class Scheduler
         _projectDir = projectDir;
 
         var finnhub = _settings.Providers?.Finnhub;
+
         _finnhubService = new FinnhubService(finnhub?.ApiKey ?? "", finnhub?.Timeout ?? 5);
-        _stockFileService = new StockFileService(projectDir);
+        // AppContext.BaseDirectory points to bin/ during dotnet run, use current dir instead
+        var baseDir = Directory.GetCurrentDirectory();
+        _stockFileService = new StockFileService(baseDir);
     }
 
     public int IntervalMinutes => _settings.Scheduler?.IntervalMinutes ?? 5;

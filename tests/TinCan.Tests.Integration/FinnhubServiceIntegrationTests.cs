@@ -17,13 +17,21 @@ public class FinnhubServiceIntegrationTests
         var dir = Directory.GetCurrentDirectory();
         string? settingsPath = null;
 
-        // Search up to 5 levels for settings.json
+        // Search up to 5 levels for settings.json in repo root or stock_bot/
         for (int i = 0; i < 5; i++)
         {
-            var candidate = Path.Combine(dir, "settings.json");
-            if (File.Exists(candidate))
+            // Check root settings.json
+            var rootCandidate = Path.Combine(dir, "settings.json");
+            if (File.Exists(rootCandidate))
             {
-                settingsPath = candidate;
+                settingsPath = rootCandidate;
+                break;
+            }
+            // Check stock_bot/settings.json (where it lives)
+            var botCandidate = Path.Combine(dir, "stock_bot", "settings.json");
+            if (File.Exists(botCandidate))
+            {
+                settingsPath = botCandidate;
                 break;
             }
             var parent = Directory.GetParent(dir);

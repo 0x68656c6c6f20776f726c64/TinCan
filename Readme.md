@@ -20,101 +20,153 @@ Market Data → Signal Engine → Decision Agent → Execution Layer → Risk Co
 
 ### Core Components
 
-* **Market Data Layer**
-
-  * Provides real-time and historical data (e.g. Finnhub)
-
-* **Signal Engine**
-
-  * Generates trading signals (BUY / SELL / HOLD)
-
-* **Agent Layer (OpenClaw)**
-
-  * Makes higher-level decisions using signals + context
-
-* **Execution Layer**
-
-  * Sends orders to broker APIs (e.g. Alpaca)
-
-* **Risk Management**
-
-  * Handles position sizing, stop-loss, and safeguards
+* **Market Data Layer** — Provides real-time and historical data (Finnhub)
+* **Signal Engine** — Generates trading signals (BUY / SELL / HOLD)
+* **Agent Layer (OpenClaw)** — Makes higher-level decisions using signals + context
+* **Execution Layer** — Sends orders to broker APIs (Alpaca)
+* **Risk Management** — Handles position sizing, stop-loss, and safeguards
 
 ---
 
 ## 🚀 Getting Started
 
-### Prerequisites
+### 1. Prerequisites
 
-* Node.js / .NET (depending on your implementation)
-* API keys for:
+* [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) or later
+* [Finnhub API key](https://finnhub.io/) (free tier available)
 
-  * Finnhub (market data)
-  * Broker API (e.g. Alpaca)
-
----
-
-### Installation
+### 2. Clone the Project
 
 ```bash
 git clone https://github.com/0x68656c6c6f20776f726c64/TinCan.git
 cd TinCan
 ```
 
-Install dependencies:
+### 3. Configure API Keys
+
+Copy the example config and add your API key:
 
 ```bash
-# Node.js
-npm install
+cp settings.example.json settings.json
+```
 
-# OR .NET
-dotnet restore
+Edit `settings.json` with your Finnhub API key:
+
+```json
+{
+    "providers": {
+        "finnhub": {
+            "api_key": "YOUR_FINNHUB_API_KEY",
+            "timeout": 5,
+            "enabled": true
+        }
+    },
+    "scheduler": {
+        "interval_minutes": 5
+    }
+}
+```
+
+> ⚠️ `settings.json` is gitignored — your API keys will never be committed.
+
+### 4. Configure Stocks to Track
+
+Edit `stock_bot/stock_lookup.json`:
+
+```json
+{
+    "stocks": {
+        "AAPL": { "enabled": true },
+        "GOOGL": { "enabled": true },
+        "U": { "enabled": true, "output": "unity_stock.json" }
+    }
+}
+```
+
+### 5. Run the Project
+
+```bash
+dotnet run
+```
+
+The app will:
+- Fetch stock prices on the configured interval (default: 5 minutes)
+- Store results in `stock_bot/results/`
+
+### 6. Run Tests
+
+```bash
+# All tests
+dotnet test
+
+# Unit tests only
+dotnet test tests/TinCan.Tests.Unit
+
+# Integration tests only (requires API key in settings.json)
+dotnet test tests/TinCan.Tests.Integration
 ```
 
 ---
 
 ## ⚙️ Configuration
 
-Create a `.env` or config file:
+| File | Description | Committed? |
+|------|-------------|------------|
+| `settings.json` | API keys and app settings | ❌ No |
+| `settings.example.json` | Template for settings.json | ✅ Yes |
+| `stock_bot/stock_lookup.json` | Stocks to track | ✅ Yes |
+| `stock_bot/stock_bot/settings.json` | Legacy Python config | ❌ No |
 
-```env
-FINNHUB_API_KEY=your_key
-BROKER_API_KEY=your_key
-BROKER_SECRET=your_secret
+---
+
+## 📁 Project Structure
+
+```
+TinCan/
+├── Program.cs              # Entry point
+├── Scheduler.cs            # Main loop & scheduling
+├── Models/                # Data models
+├── Services/              # Business logic
+│   ├── FinnhubService.cs  # Finnhub API integration
+│   └── StockFileService.cs # File operations
+├── tests/                 # Test projects
+│   ├── TinCan.Tests.Unit/
+│   └── TinCan.Tests.Integration/
+└── stock_bot/            # Data storage
+    ├── results/           # Price data output
+    └── stock_lookup.json # Stock configuration
 ```
 
 ---
 
-## 🧪 Running the Project
+## 🧪 Running Tests
 
 ```bash
-# Node
-npm start
+# All tests
+dotnet test
 
-# OR .NET
-dotnet run
+# Unit tests only
+dotnet test tests/TinCan.Tests.Unit
+
+# Integration tests only
+dotnet test tests/TinCan.Tests.Integration
 ```
 
----
-
-## 📈 Example Workflow
-
-1. Fetch price data from Finnhub
-2. Generate signal (e.g. Moving Average crossover)
-3. OpenClaw evaluates decision
-4. Execute trade via broker API
-5. Apply risk controls
+Integration tests require a valid Finnhub API key in `settings.json`.
 
 ---
 
 ## 🧩 Roadmap
 
+* [x] Basic Finnhub market data provider
+* [x] Stock file storage
+* [x] Unit & integration tests
 * [ ] Basic signal engine (MA / RSI)
-* [ ] Paper trading integration
+* [ ] Alpaca broker integration
+* [ ] Paper trading
 * [ ] OpenClaw decision agent
 * [ ] Risk management module
 * [ ] Backtesting framework
-* [ ] Multi-asset support
 
 ---
 
@@ -122,16 +174,6 @@ dotnet run
 
 This project is for **educational and experimental purposes only**.
 Do not use with real funds without proper testing and risk management.
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome!
-
-* Fork the repo
-* Create a feature branch
-* Submit a PR
 
 ---
 

@@ -55,8 +55,7 @@ def run_provider(provider_name, filepath):
     """Execute a single provider script"""
     log.info(f"Running provider: {provider_name}")
     try:
-        # Execute the provider module
-        namespace = {}
+        namespace = {"__file__": filepath, "__name__": "__main__"}
         with open(filepath, "r") as f:
             code = f.read()
         exec(compile(code, filepath, "exec"), namespace)

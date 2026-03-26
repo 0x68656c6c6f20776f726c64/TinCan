@@ -1,6 +1,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TinCan.Services;
 using TinCan.Models;
+using Newtonsoft.Json;
 
 namespace TinCan.Tests.Integration;
 
@@ -12,19 +13,26 @@ public class FinnhubServiceIntegrationTests
     [TestInitialize]
     public void Setup()
     {
-        // API key should be set via settings or environment variable in CI
-        var settings = new Settings
+        // Load API key from settings.json
+        try
         {
-            Providers = new Providers
+            var settingsPath = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "settings.json");
+            if (File.Exists(settingsPath))
             {
-                Finnhub = new FinnhubConfig
-                {
-                    ApiKey = Environment.GetEnvironmentVariable("FINNHUB_API_KEY") ?? "d6u58qpr01qp1k9ba1sgd6u58qpr01qp1k9ba1t0",
-                    Timeout = 10
-                }
+                var json = File.ReadAllText(settingsPath);
+                var settings = JsonConvert.DeserializeObject<Settings>(json);
+                _apiKey = settings?.Providers?.Finnhub?.ApiKey;
             }
-        };
-        _apiKey = settings.Providers?.Finnhub?.ApiKey;
+        }
+        catch
+        {
+            // Fallback
+        }
+
+        if (string.IsNullOrEmpty(_apiKey) || _apiKey == "your_finnhub_api_key")
+        {
+            _apiKey = Environment.GetEnvironmentVariable("FINNHUB_API_KEY");
+        }
     }
 
     [TestMethod]

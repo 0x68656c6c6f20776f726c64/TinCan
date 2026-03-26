@@ -1,35 +1,12 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
-using System.Net;
-using System.Net.Http;
 using TinCan.Services;
-using Newtonsoft.Json.Linq;
+using TinCan.Models;
 
 namespace TinCan.Tests.Unit;
 
 [TestClass]
 public class FinnhubServiceTests
 {
-    [TestMethod]
-    public async Task FetchPriceAsync_ValidSymbol_ReturnsStockPrice()
-    {
-        // Arrange
-        var apiKey = "test_key";
-        var service = new FinnhubService(apiKey);
-        var mockHandler = new Mock<HttpMessageHandler>();
-        var json = JObject.FromObject(new { c = 150.25, h = 151.00, l = 149.50 });
-        mockHandler.Setup(m => m.Send(It.IsAny<HttpRequestMessage>()))
-            .Returns(new HttpResponseMessage(HttpStatusCode.OK)
-            {
-                Content = new StringContent(json.ToString())
-            });
-        var httpClient = new HttpClient(mockHandler.Object);
-
-        // Note: This test validates the service structure
-        // Integration tests would use real HTTP calls
-        Assert.IsNotNull(service);
-    }
-
     [TestMethod]
     public void Constructor_InitializesCorrectly()
     {
@@ -38,5 +15,55 @@ public class FinnhubServiceTests
 
         // Assert
         Assert.IsNotNull(service);
+    }
+
+    [TestMethod]
+    public void StockPrice_Model_HoldsCorrectValues()
+    {
+        // Arrange & Act
+        var price = new StockPrice
+        {
+            Symbol = "AAPL",
+            Price = 150.25,
+            High = 151.00,
+            Low = 149.50,
+            Timestamp = DateTime.Now
+        };
+
+        // Assert
+        Assert.AreEqual("AAPL", price.Symbol);
+        Assert.AreEqual(150.25, price.Price);
+        Assert.AreEqual(151.00, price.High);
+        Assert.AreEqual(149.50, price.Low);
+        Assert.IsTrue(price.High >= price.Price);
+        Assert.IsTrue(price.Low <= price.Price);
+    }
+
+    [TestMethod]
+    public void Settings_Model_DeserializesCorrectly()
+    {
+        // Arrange
+        var json = @"{
+            ""providers"": {
+                ""finnhub"": {
+                    ""api_key"": ""test_key"",
+                    ""timeout"": 10,
+                    ""enabled"": true
+                }
+            },
+            ""scheduler"": {
+                ""interval_minutes"": 5
+            }
+        }";
+
+        // Act
+        var settings = Newtonsoft.Json.JsonConvert.DeserializeObject<Settings>(json);
+
+        // Assert
+        Assert.IsNotNull(settings);
+        Assert.AreEqual("test_key", settings.Providers?.Finnhub?.ApiKey);
+        Assert.AreEqual(10, settings.Providers?.Finnhub?.Timeout);
+        Assert.IsTrue(settings.Providers?.Finnhub?.Enabled);
+        Assert.AreEqual(5, settings.Scheduler?.IntervalMinutes);
     }
 }

@@ -20,10 +20,10 @@ Market Data → Signal Engine → Decision Agent → Execution Layer → Risk Co
 
 ### Core Components
 
-* **Market Data Layer** — Provides real-time and historical data (Finnhub)
+* **Market Data Layer** — Finnhub for real-time stock prices
 * **Signal Engine** — Generates trading signals (BUY / SELL / HOLD)
 * **Agent Layer (OpenClaw)** — Makes higher-level decisions using signals + context
-* **Execution Layer** — Sends orders to broker APIs (Alpaca)
+* **Execution Layer** — Sends orders to broker APIs (e.g. Alpaca)
 * **Risk Management** — Handles position sizing, stop-loss, and safeguards
 
 ---
@@ -32,109 +32,84 @@ Market Data → Signal Engine → Decision Agent → Execution Layer → Risk Co
 
 ### 1. Prerequisites
 
-* [.NET 8.0 SDK](https://dotnet.microsoft.com/download/dotnet/8.0) or later
-* [Finnhub API key](https://finnhub.io/) (free tier available)
+* [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
+* API keys:
+  * [Finnhub](https://finnhub.io) — free tier available
+  * [Alpaca](https://alpaca.markets) — for paper trading (optional)
 
-### 2. Clone the Project
+### 2. Clone the repo
 
 ```bash
 git clone https://github.com/0x68656c6c6f20776f726c64/TinCan.git
 cd TinCan
 ```
 
-### 3. Configure API Keys
+### 3. Configure settings
 
-Copy the example config and add your API key:
+Copy the example settings and add your API key:
 
 ```bash
-cp settings.example.json settings.json
+# Copy settings file
+cp stock_bot/settings.example.json stock_bot/settings.json
+
+# Edit with your API key
+# Linux/macOS:
+nano stock_bot/settings.json
+
+# Windows:
+notepad stock_bot/settings.json
 ```
 
-Edit `settings.json` with your Finnhub API key:
+Your `stock_bot/settings.json` should look like:
 
 ```json
 {
-    "providers": {
-        "finnhub": {
-            "api_key": "YOUR_FINNHUB_API_KEY",
-            "timeout": 5,
-            "enabled": true
-        }
+    "finnhub": {
+        "api_key": "YOUR_FINNHUB_API_KEY",
+        "timeout": 5
     },
-    "scheduler": {
-        "interval_minutes": 5
+    "alpaca": {
+        "api_key": "YOUR_ALPACA_API_KEY",
+        "api_secret": "YOUR_ALPACA_SECRET",
+        "base_url": "https://paper-api.alpaca.markets"
     }
 }
 ```
 
-> ⚠️ `settings.json` is gitignored — your API keys will never be committed.
+> ⚠️ **Note:** `stock_bot/settings.json` is gitignored — your API keys stay local.
 
-### 4. Configure Stocks to Track
+### 4. Add stocks to track
 
 Edit `stock_bot/stock_lookup.json`:
 
 ```json
 {
     "stocks": {
-        "AAPL": { "enabled": true },
-        "GOOGL": { "enabled": true },
-        "U": { "enabled": true, "output": "unity_stock.json" }
+        "U": {
+            "enabled": true,
+            "name": "Unity Software",
+            "output": "unity_stock.json"
+        },
+        "AAPL": {
+            "enabled": true,
+            "name": "Apple",
+            "output": "aapl_stock.json"
+        }
     }
 }
 ```
 
-### 5. Run the Project
+### 5. Run the app
 
 ```bash
+# Restore dependencies
+dotnet restore
+
+# Run the app (fetches every 5 minutes)
 dotnet run
-```
 
-The app will:
-- Fetch stock prices on the configured interval (default: 5 minutes)
-- Store results in `stock_bot/results/`
-
-### 6. Run Tests
-
-```bash
-# All tests
-dotnet test
-
-# Unit tests only
-dotnet test tests/TinCan.Tests.Unit
-
-# Integration tests only (requires API key in settings.json)
-dotnet test tests/TinCan.Tests.Integration
-```
-
----
-
-## ⚙️ Configuration
-
-| File | Description | Committed? |
-|------|-------------|------------|
-| `settings.json` | API keys and app settings | ❌ No |
-| `settings.example.json` | Template for settings.json | ✅ Yes |
-| `stock_bot/stock_lookup.json` | Stocks to track | ✅ Yes |
-| `stock_bot/stock_bot/settings.json` | Legacy Python config | ❌ No |
-
----
-
-## 📁 Project Structure
-
-```
-TinCan/
-├── Program.cs              # Entry point
-├── Scheduler.cs            # Main loop & scheduling
-├── Models/                # Data models
-├── Services/              # Business logic
-│   ├── FinnhubService.cs  # Finnhub API integration
-│   └── StockFileService.cs # File operations
-├── tests/                 # Test projects
-│   ├── TinCan.Tests.Unit/
-│   └── TinCan.Tests.Integration/
-└── stock_bot/            # Data storage
-    ├── results/           # Price data output
-    └── stock_lookup.json # Stock configuration
+# Or run once and exit
+dotnet run -- --once
 ```
 
 ---
@@ -142,28 +117,52 @@ TinCan/
 ## 🧪 Running Tests
 
 ```bash
-# All tests
+# Run all tests
 dotnet test
 
-# Unit tests only
-dotnet test tests/TinCan.Tests.Unit
+# Unit tests only (no API key needed)
+dotnet test tests/TinCan.Tests.Unit/
 
-# Integration tests only
-dotnet test tests/TinCan.Tests.Integration
+# Integration tests (requires API key)
+dotnet test tests/TinCan.Tests.Integration/
+
+# Or set API key via environment variable
+FINNHUB_API_KEY="your_key" dotnet test
 ```
 
-Integration tests require a valid Finnhub API key in `settings.json`.
+---
+
+## ⚙️ Project Structure
+
+```
+TinCan/
+├── Program.cs              # Entry point
+├── Scheduler.cs            # Main loop (runs every X minutes)
+├── Models/
+│   ├── Settings.cs         # Configuration model
+│   ├── StockLookup.cs     # Stock tracking config
+│   └── StockPrice.cs      # Price data model
+├── Services/
+│   ├── FinnhubService.cs  # Fetches stock prices
+│   └── StockFileService.cs# Reads/writes stock data
+├── tests/
+│   ├── TinCan.Tests.Unit/        # Unit tests (mocked)
+│   └── TinCan.Tests.Integration/ # Integration tests (real API)
+└── stock_bot/
+    ├── settings.json      # API keys (gitignored)
+    ├── settings.example.json
+    └── stock_lookup.json  # Stocks to track
+```
 
 ---
 
 ## 🧩 Roadmap
 
-* [x] Basic Finnhub market data provider
-* [x] Stock file storage
+* [x] Market data layer (Finnhub)
+* [x] Scheduler with configurable interval
 * [x] Unit & integration tests
 * [ ] Basic signal engine (MA / RSI)
-* [ ] Alpaca broker integration
-* [ ] Paper trading
+* [ ] Paper trading integration (Alpaca)
 * [ ] OpenClaw decision agent
 * [ ] Risk management module
 * [ ] Backtesting framework

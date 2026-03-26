@@ -11,39 +11,55 @@ public class Scheduler
 {
     private readonly Settings _settings;
     private readonly string _projectDir;
+    private readonly FinnhubService _finnhubService;
+    private readonly StockFileService _stockFileService;
 
     public Scheduler(Settings settings, string projectDir)
     {
         _settings = settings;
         _projectDir = projectDir;
+
+        var finnhub = _settings.Providers?.Finnhub;
+        _finnhubService = new FinnhubService(finnhub?.ApiKey ?? "", finnhub?.Timeout ?? 5);
+        _stockFileService = new StockFileService(projectDir);
     }
 
     public int IntervalMinutes => _settings.Scheduler?.IntervalMinutes ?? 5;
 
-    private static Settings LoadSettings(string path)
-    {
-        if (!File.Exists(path))
-        {
-            Console.WriteLine($"[WARN] settings.json not found at {path}");
-            return new Settings();
-        }
-        var json = File.ReadAllText(path);
-        return JsonConvert.DeserializeObject<Settings>(json) ?? new Settings();
-    }
-
-    public void RunProviders()
-    {
-        Console.WriteLine($"[{DateTime.Now:HH:mm:ss}] Running providers...");
-        RunFinnhub().Wait();
-    }
-
-    private async Task RunFinnhub()
+    public async Task RunProvidersAsync()
     {
         var finnhub = _settings.Providers?.Finnhub;
         if (finnhub == null || !finnhub.Enabled)
+        {
+            Console.WriteLine("[INFO] Finnhub provider is disabled or API key not set");
             return;
+        }
 
-        var service = new FinnhubService(finnhub, _projectDir);
-        await service.RunAsync();
+        var lookup = _stockFileService.LoadLookup();
+        var stocks = _stockFileService.GetEnabledStocks(lookup);
+
+        if (stocks.Count == 0)
+        {
+            Console.WriteLine("[INFO] No stocks to track");
+            return;
+        }
+
+        Console.WriteLine($"[INFO] Checking {stocks.Count} stock(s): {string.Join(", ", stocks)}");
+
+        foreach (var symbol in stocks)
+        {
+            try
+            {
+                var price = await _finnhubService.FetchPriceAsync(symbol);
+                if (price != null)
+                {
+                    _stockFileService.UpdateStockFile(symbol, price.Price, price.High, price.Low, lookup);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] {symbol}: {ex.Message}");
+            }
+        }
     }
 }

@@ -21,7 +21,7 @@ class Program
         return JsonConvert.DeserializeObject<Settings>(json) ?? new Settings();
     }
 
-    static void Main(string[] args)
+    static async Task Main(string[] args)
     {
         Console.WriteLine("==================================================");
         Console.WriteLine(" TinCan - Starting up");
@@ -37,7 +37,7 @@ class Program
         Console.WriteLine("==================================================");
 
         // Run once immediately
-        scheduler.RunProviders();
+        await scheduler.RunProvidersAsync();
 
         // Main loop
         while (true)
@@ -45,7 +45,7 @@ class Program
             try
             {
                 Thread.Sleep(TimeSpan.FromMinutes(intervalMinutes));
-                scheduler.RunProviders();
+                await scheduler.RunProvidersAsync();
             }
             catch (ThreadInterruptedException)
             {

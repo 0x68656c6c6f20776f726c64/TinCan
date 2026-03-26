@@ -1,0 +1,13 @@
+{
+    "providers": {
+        "finnhub": {
+            "api_key": "your_finnhub_api_key",
+            "timeout": 5,
+            "enabled": true
+        }
+    },
+    "scheduler": {
+        "interval_minutes": 5
+    },
+    "results_dir": "stock_bot/results"
+}

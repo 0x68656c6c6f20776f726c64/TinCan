@@ -13,32 +13,49 @@ public class FinnhubServiceIntegrationTests
     [TestInitialize]
     public void Setup()
     {
-        // Load API key from settings.json
-        try
+        // Try to find settings.json by traversing up from test output directory
+        var dir = Directory.GetCurrentDirectory();
+        string? settingsPath = null;
+
+        // Search up to 5 levels for settings.json
+        for (int i = 0; i < 5; i++)
         {
-            var settingsPath = Path.Combine(Directory.GetCurrentDirectory(), "..", "..", "settings.json");
-            if (File.Exists(settingsPath))
+            var candidate = Path.Combine(dir, "settings.json");
+            if (File.Exists(candidate))
+            {
+                settingsPath = candidate;
+                break;
+            }
+            var parent = Directory.GetParent(dir);
+            if (parent == null) break;
+            dir = parent.FullName;
+        }
+
+        // Also check environment variable
+        var envKey = Environment.GetEnvironmentVariable("FINNHUB_API_KEY");
+
+        if (!string.IsNullOrEmpty(settingsPath))
+        {
+            try
             {
                 var json = File.ReadAllText(settingsPath);
                 var settings = JsonConvert.DeserializeObject<Settings>(json);
                 _apiKey = settings?.Providers?.Finnhub?.ApiKey;
             }
-        }
-        catch
-        {
-            // Fallback
+            catch { }
         }
 
+        // Fallback to environment variable
         if (string.IsNullOrEmpty(_apiKey) || _apiKey == "your_finnhub_api_key")
         {
-            _apiKey = Environment.GetEnvironmentVariable("FINNHUB_API_KEY");
+            _apiKey = envKey;
         }
     }
 
     [TestMethod]
     public async Task FetchPriceAsync_UnitySymbol_ReturnsValidPrice()
     {
-        if (string.IsNullOrEmpty(_apiKey)) Assert.Inconclusive("API key not configured");
+        if (string.IsNullOrEmpty(_apiKey)) Assert.Inconclusive("API key not configured - set FINNHUB_API_KEY env or add settings.json at repo root");
 
         var service = new FinnhubService(_apiKey, 10);
         var result = await service.FetchPriceAsync("U");
@@ -53,7 +70,7 @@ public class FinnhubServiceIntegrationTests
     [TestMethod]
     public async Task FetchPriceAsync_AAPL_ReturnsValidPrice()
     {
-        if (string.IsNullOrEmpty(_apiKey)) Assert.Inconclusive("API key not configured");
+        if (string.IsNullOrEmpty(_apiKey)) Assert.Inconclusive("API key not configured - set FINNHUB_API_KEY env or add settings.json at repo root");
 
         var service = new FinnhubService(_apiKey, 10);
         var result = await service.FetchPriceAsync("AAPL");
@@ -66,7 +83,7 @@ public class FinnhubServiceIntegrationTests
     [TestMethod]
     public async Task FetchPriceAsync_InvalidSymbol_ReturnsNull()
     {
-        if (string.IsNullOrEmpty(_apiKey)) Assert.Inconclusive("API key not configured");
+        if (string.IsNullOrEmpty(_apiKey)) Assert.Inconclusive("API key not configured - set FINNHUB_API_KEY env or add settings.json at repo root");
 
         var service = new FinnhubService(_apiKey, 10);
         var result = await service.FetchPriceAsync("INVALID_SYMBOL_XYZ");

@@ -8,14 +8,18 @@ namespace TinCan.Services;
 public class FinnhubService
 {
     private readonly string _apiKey;
-    private readonly int _timeout;
     private readonly HttpClient _http;
+
+    public FinnhubService(string apiKey, HttpClient http)
+    {
+        _apiKey = apiKey;
+        _http = http;
+    }
 
     public FinnhubService(string apiKey, int timeout = 5)
     {
         _apiKey = apiKey;
-        _timeout = timeout;
-        _http = new HttpClient { Timeout = TimeSpan.FromSeconds(_timeout) };
+        _http = new HttpClient { Timeout = TimeSpan.FromSeconds(timeout) };
     }
 
     public async Task<StockPrice?> FetchPriceAsync(string symbol)

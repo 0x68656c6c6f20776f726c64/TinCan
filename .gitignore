@@ -1,3 +1,5 @@
 results/
 config.json
 .env
+stock_bot/settings.json
+stock_bot/results/

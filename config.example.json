@@ -1,0 +1,6 @@
+{
+    "interval": 5,
+    "providers": [
+        "finnhub_ws"
+    ]
+}

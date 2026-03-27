@@ -5,3 +5,6 @@ stock_bot/settings.json
 stock_bot/results/
 settings.json
 bin/
+tests/TinCan.Tests.Integration/obj/
+tests/TinCan.Tests.Unit/obj/
+obj/

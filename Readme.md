@@ -12,19 +12,112 @@ The goal of this project is to provide a flexible foundation for building:
 
 ## 🧠 Architecture Overview
 
-```
-Market Data → Signal Engine → Decision Agent → Execution Layer → Risk Control
+TinCan is designed as a **safe, agent-driven trading system** where all AI-generated strategies are **validated through sandbox simulation before execution**.
+
+```text
+Market Data → Signal Engine → Sandbox Simulation → Execution Layer → Risk Control
      ↑              ↓               ↓                ↓               ↓
-  Finnhub      Strategy Logic   OpenClaw        Broker API     Position Mgmt
+  Finnhub      OpenClaw            E2B          Broker API     Position Mgmt
 ```
 
-### Core Components
+---
 
-* **Market Data Layer** — Finnhub for real-time stock prices
-* **Signal Engine** — Generates trading signals (BUY / SELL / HOLD)
-* **Agent Layer (OpenClaw)** — Makes higher-level decisions using signals + context
-* **Execution Layer** — Sends orders to broker APIs (e.g. Alpaca)
-* **Risk Management** — Handles position sizing, stop-loss, and safeguards
+## 🔍 Core Concepts
+
+### 1. Market Data Layer
+
+* Source of truth for price data
+* Powered by **Finnhub**
+* Provides real-time and historical data for strategy evaluation
+
+---
+
+### 2. Signal Engine (AI-Driven)
+
+* Strategies are defined as **text inputs**
+* OpenClaw converts text into executable strategy logic
+* Outputs standardized `TradeSignal` objects (BUY / SELL / HOLD / etc.)
+
+👉 No hardcoded strategies — fully dynamic and extensible
+
+---
+
+### 3. Sandbox Simulation (Critical Safety Layer)
+
+* All AI-generated strategies are executed in a secure sandbox using E2B
+* Runs backtesting and forward simulation using historical data
+* Prevents unsafe or unverified strategies from reaching live trading
+
+#### Simulation Responsibilities:
+
+* Execute strategy logic deterministically
+* Simulate trades over time
+* Generate performance metrics:
+
+  * Profit & Loss (PnL)
+  * Max Drawdown
+  * Win Rate
+  * Trade Count
+  * Equity Curve
+
+👉 This is the **core validation gate** before any real trade
+
+---
+
+### 4. Execution Layer
+
+* Converts validated `TradeSignal` into real trades
+* Integrates with broker APIs (e.g. Alpaca)
+* Handles:
+
+  * Order placement
+  * Order status tracking
+  * Execution feedback
+
+---
+
+### 5. Risk Control Layer
+
+* Final safeguard before capital is deployed
+* Enforces:
+
+  * Position sizing limits
+  * Max loss per trade
+  * Exposure limits
+  * Kill switch conditions
+
+👉 Risk logic is **separate from AI strategy logic**
+
+---
+
+## 🔄 End-to-End Workflow
+
+1. User submits strategy (natural language)
+2. OpenClaw generates executable strategy code
+3. Strategy runs inside E2B sandbox
+4. Simulation engine produces performance metrics
+5. User reviews results and adjusts risk parameters
+6. Approved strategy is deployed to execution layer
+7. Risk control enforces safety in live trading
+
+---
+
+## ⚠️ Safety Principles
+
+* AI-generated code is **never executed directly in production**
+* All strategies must pass sandbox simulation
+* Execution layer is isolated from AI logic
+* Risk management overrides all signals
+
+---
+
+## 🧩 Future Enhancements
+
+* Strategy versioning & comparison
+* Multi-strategy portfolio orchestration
+* Live vs simulated performance tracking
+* Advanced risk models (VaR, volatility targeting)
+* Distributed backtesting engine
 
 ---
 

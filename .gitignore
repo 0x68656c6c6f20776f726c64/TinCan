@@ -8,3 +8,4 @@ bin/
 tests/TinCan.Tests.Integration/obj/
 tests/TinCan.Tests.Unit/obj/
 obj/
+/.vs/

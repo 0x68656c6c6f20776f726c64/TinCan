@@ -193,4 +193,129 @@ public class StockFileServiceTests
         Assert.IsTrue(content.Contains("17.0"));
         Assert.IsTrue(content.Contains("17.5"));
     }
+
+    [TestMethod]
+    public void LoadMarketContext_MissingFile_ReturnsEmptyContext()
+    {
+        var service = new StockFileService(_testDir);
+
+        var result = service.LoadMarketContext("AAPL");
+
+        Assert.AreEqual("AAPL", result.Symbol);
+        Assert.IsNull(result.CurrentPrice);
+        Assert.AreEqual(0, result.PriceHistory.Count);
+    }
+
+    [TestMethod]
+    public void LoadMarketContext_EmptyFile_ReturnsEmptyContext()
+    {
+        var resultsDir = Path.Combine(_testDir, "stock_bot", "results");
+        Directory.CreateDirectory(resultsDir);
+        File.WriteAllText(Path.Combine(resultsDir, "aapl_stock.json"), "[]");
+
+        var service = new StockFileService(_testDir);
+
+        var result = service.LoadMarketContext("AAPL");
+
+        Assert.AreEqual("AAPL", result.Symbol);
+        Assert.IsNull(result.CurrentPrice);
+        Assert.AreEqual(0, result.PriceHistory.Count);
+    }
+
+    [TestMethod]
+    public void LoadMarketContext_SingleEntry_CurrentPriceEqualsHistoryEntry()
+    {
+        var resultsDir = Path.Combine(_testDir, "stock_bot", "results");
+        Directory.CreateDirectory(resultsDir);
+        var lookup = new StockLookup
+        {
+            Stocks = new Dictionary<string, StockInfo>
+            {
+                ["AAPL"] = new StockInfo { Enabled = true, Output = "aapl_stock.json" }
+            }
+        };
+        File.WriteAllText(Path.Combine(resultsDir, "aapl_stock.json"),
+            @"[{""time"":""2024-01-15 09:30:00 CT"",""price"":185.50,""high"":186.00,""low"":185.00}]");
+
+        var service = new StockFileService(_testDir);
+
+        var result = service.LoadMarketContext("AAPL");
+
+        Assert.AreEqual(1, result.PriceHistory.Count);
+        Assert.IsNotNull(result.CurrentPrice);
+        Assert.AreEqual(185.50, result.CurrentPrice.Price);
+        Assert.AreEqual(186.00, result.CurrentPrice.High);
+        Assert.AreEqual(185.00, result.CurrentPrice.Low);
+    }
+
+    [TestMethod]
+    public void LoadMarketContext_MultipleEntries_SortedChronologically_CurrentPriceIsLast()
+    {
+        var resultsDir = Path.Combine(_testDir, "stock_bot", "results");
+        Directory.CreateDirectory(resultsDir);
+        var lookup = new StockLookup
+        {
+            Stocks = new Dictionary<string, StockInfo>
+            {
+                ["U"] = new StockInfo { Enabled = true, Output = "unity_stock.json" }
+            }
+        };
+        File.WriteAllText(Path.Combine(resultsDir, "unity_stock.json"),
+            @"[{""time"":""2024-01-01 09:30:00 CT"",""price"":17.0,""high"":17.5,""low"":16.5}," +
+            @"{""time"":""2024-01-02 09:30:00 CT"",""price"":18.0,""high"":18.5,""low"":17.5}," +
+            @"{""time"":""2024-01-03 09:30:00 CT"",""price"":19.0,""high"":19.5,""low"":18.5}]");
+
+        var service = new StockFileService(_testDir);
+        var result = service.LoadMarketContext("U", lookup);
+
+        Assert.AreEqual(3, result.PriceHistory.Count);
+        Assert.AreEqual("U", result.Symbol);
+        Assert.IsNotNull(result.CurrentPrice);
+        Assert.AreEqual(19.0, result.CurrentPrice.Price);
+        Assert.AreEqual(3, result.PriceHistory.Count);
+        Assert.AreEqual(17.0, result.PriceHistory[0].Price);
+        Assert.AreEqual(19.0, result.PriceHistory[2].Price);
+    }
+
+    [TestMethod]
+    public void LoadMarketContext_UnknownSymbol_ReturnsEmptyContext()
+    {
+        var resultsDir = Path.Combine(_testDir, "stock_bot", "results");
+        Directory.CreateDirectory(resultsDir);
+        // Create a file for a different symbol
+        File.WriteAllText(Path.Combine(resultsDir, "aapl_stock.json"),
+            @"[{""time"":""2024-01-15 09:30:00 CT"",""price"":185.50,""high"":186.00,""low"":185.00}]");
+
+        var service = new StockFileService(_testDir);
+
+        var result = service.LoadMarketContext("UNKNOWN");
+
+        Assert.AreEqual("UNKNOWN", result.Symbol);
+        Assert.IsNull(result.CurrentPrice);
+        Assert.AreEqual(0, result.PriceHistory.Count);
+    }
+
+    [TestMethod]
+    public void LoadMarketContext_UTCFormat_ParsesCorrectly()
+    {
+        var resultsDir = Path.Combine(_testDir, "stock_bot", "results");
+        Directory.CreateDirectory(resultsDir);
+        var lookup = new StockLookup
+        {
+            Stocks = new Dictionary<string, StockInfo>
+            {
+                ["AAPL"] = new StockInfo { Enabled = true, Output = "aapl_stock.json" }
+            }
+        };
+        File.WriteAllText(Path.Combine(resultsDir, "aapl_stock.json"),
+            @"[{""time"":""2024-01-15 14:30:00 UTC"",""price"":185.50,""high"":186.00,""low"":185.00}]");
+
+        var service = new StockFileService(_testDir);
+
+        var result = service.LoadMarketContext("AAPL", lookup);
+
+        Assert.AreEqual(1, result.PriceHistory.Count);
+        Assert.IsNotNull(result.CurrentPrice);
+        Assert.AreEqual(185.50, result.CurrentPrice.Price);
+    }
 }

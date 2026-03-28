@@ -36,7 +36,7 @@ Market Data → Signal Engine → Sandbox Simulation → Execution Layer → Ris
 
 * Strategies are defined as **text inputs**
 * OpenClaw converts text into executable strategy logic
-* Outputs standardized `TradeSignal` objects (BUY / SELL / HOLD / etc.)
+* Outputs standardized `Signal` objects (Buy / Sell / Hold)
 
 👉 No hardcoded strategies — fully dynamic and extensible
 
@@ -234,10 +234,18 @@ TinCan/
 ├── Models/
 │   ├── Settings.cs         # Configuration model
 │   ├── StockLookup.cs     # Stock tracking config
-│   └── StockPrice.cs      # Price data model
+│   ├── StockPrice.cs      # Price data model
+│   ├── Signal.cs          # Trading signal model (Buy/Sell/Hold)
+│   └── MarketContext.cs   # Market data context for strategies
+├── Strategies/
+│   ├── IStrategy.cs       # Strategy interface
+│   ├── StrategyBase.cs    # Abstract base class with helper methods
+│   ├── OpenClawStrategy.cs     # Base strategy that calls OpenClaw agent
+│   └── OpenClawSimpleStrategy.cs  # Simple child strategy
 ├── Services/
 │   ├── FinnhubService.cs  # Fetches stock prices
-│   └── StockFileService.cs# Reads/writes stock data
+│   ├── StockFileService.cs# Reads/writes stock data
+│   └── OpenClawService.cs # Calls OpenClaw agent for trading signals
 ├── tests/
 │   ├── TinCan.Tests.Unit/        # Unit tests (mocked)
 │   └── TinCan.Tests.Integration/ # Integration tests (real API)
@@ -254,9 +262,10 @@ TinCan/
 * [x] Market data layer (Finnhub)
 * [x] Scheduler with configurable interval
 * [x] Unit & integration tests
+* [x] Signal Engine framework (IStrategy, StrategyBase)
+* [x] OpenClaw-powered strategy
 * [ ] Basic signal engine (MA / RSI)
 * [ ] Paper trading integration (Alpaca)
-* [ ] OpenClaw decision agent
 * [ ] Risk management module
 * [ ] Backtesting framework
 

@@ -6,7 +6,7 @@ public abstract class StrategyBase : IStrategy
 {
     public abstract string Name { get; }
 
-    public abstract Signal Generate(MarketContext context);
+    public abstract Task<Signal> GenerateAsync(MarketContext context);
 
     public Signal CreateSignal(SignalType type, string reason, double confidence)
     {

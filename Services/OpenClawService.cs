@@ -1,4 +1,5 @@
 using System.Text.Json;
+using TinCan.Models;
 
 namespace TinCan.Services;
 
@@ -70,11 +71,4 @@ public class OpenClawService
 
         return null;
     }
-}
-
-public class OpenClawResponse
-{
-    public string? Suggestion { get; set; }
-    public double Confidence { get; set; }
-    public string? Reason { get; set; }
 }

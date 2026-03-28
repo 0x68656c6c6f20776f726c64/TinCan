@@ -12,24 +12,28 @@ public class OpenClawSimpleStrategy : OpenClawStrategy
     {
     }
 
-    protected override async Task<Signal> BuildSignalFromResponse(OpenClawResponse? response)
+    public override async Task<Signal> Generate(MarketContext context)
     {
-        if (response == null || string.IsNullOrEmpty(response.Suggestion))
+        if (context.CurrentPrice == null)
         {
-            return CreateSignal(SignalType.Hold, "No response from OpenClaw", 0.1);
+            return CreateSignal(SignalType.Hold, "No current price available", 0.0);
         }
 
-        var signalType = response.Suggestion.ToLowerInvariant() switch
+        try
         {
-            "buy" => SignalType.Buy,
-            "sell" => SignalType.Sell,
-            _ => SignalType.Hold
-        };
+            var response = await _openClawService.GetTradingSignalAsync(
+                context.Symbol,
+                context.CurrentPrice.Price,
+                context.CurrentPrice.High,
+                context.CurrentPrice.Low,
+                context.CurrentPrice.Timestamp
+            );
 
-        var reason = string.IsNullOrEmpty(response.Reason)
-            ? $"OpenClaw suggested {response.Suggestion}"
-            : response.Reason;
-
-        return CreateSignal(signalType, reason, response.Confidence);
+            return await BuildSignalFromResponse(response);
+        }
+        catch
+        {
+            return CreateSignal(SignalType.Hold, "Error calling OpenClaw service", 0.0);
+        }
     }
 }

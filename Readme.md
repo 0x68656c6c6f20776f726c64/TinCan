@@ -40,31 +40,6 @@ Market Data → Signal Engine → Sandbox Simulation → Execution Layer → Ris
 
 👉 No hardcoded strategies — fully dynamic and extensible
 
-#### Signal Model
-```csharp
-public enum SignalType { Buy, Sell, Hold }
-
-public class Signal
-{
-    public SignalType Type { get; set; }
-    public string Reason { get; set; } = "";
-    public double Confidence { get; set; } // 0.0 to 1.0
-}
-```
-
-#### Strategy Interface
-```csharp
-public interface IStrategy
-{
-    string Name { get; }
-    Signal Generate(MarketContext context);
-}
-```
-
-#### Available Strategies
-- **OpenClawStrategy** — Calls OpenClaw agent for AI-powered trading signals
-- **OpenClawSimpleStrategy** — Child class of OpenClawStrategy for simpler use cases
-
 ---
 
 ### 3. Sandbox Simulation (Critical Safety Layer)

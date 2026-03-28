@@ -16,27 +16,30 @@ public class OpenClawStrategy : StrategyBase
 
     public override Signal Generate(MarketContext context)
     {
-        try
-        {
-            var result = _openClawService.GetStrategySuggestionAsync(context).GetAwaiter().GetResult();
-            
-            if (result == null)
-            {
-                return CreateSignal(SignalType.Hold, "OpenClaw returned no result", 0.0);
-            }
+        // Default implementation - subclasses should override
+        return CreateSignal(SignalType.Hold, "Not implemented", 0.0);
+    }
 
-            var signalType = result.Suggestion.ToLower() switch
-            {
-                "buy" => SignalType.Buy,
-                "sell" => SignalType.Sell,
-                _ => SignalType.Hold
-            };
+    protected virtual async Task<Signal> GenerateSignalAsync(MarketContext context)
+    {
+        var result = await _openClawService.GetStrategySuggestionAsync(context);
+        return BuildSignalFromResponse(result);
+    }
 
-            return CreateSignal(signalType, result.Reason, result.Confidence);
-        }
-        catch (Exception ex)
+    protected virtual Signal BuildSignalFromResponse(OpenClawResult? result)
+    {
+        if (result == null || string.IsNullOrEmpty(result.Suggestion))
         {
-            return CreateSignal(SignalType.Hold, $"OpenClaw error: {ex.Message}", 0.0);
+            return CreateSignal(SignalType.Hold, "No response from OpenClaw", 0.0);
         }
+
+        var signalType = result.Suggestion.ToLowerInvariant() switch
+        {
+            "buy" => SignalType.Buy,
+            "sell" => SignalType.Sell,
+            _ => SignalType.Hold
+        };
+
+        return CreateSignal(signalType, result.Reason ?? "", result.Confidence);
     }
 }

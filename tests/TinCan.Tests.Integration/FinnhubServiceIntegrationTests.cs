@@ -1,7 +1,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TinCan.Services;
 using TinCan.Models;
-using Newtonsoft.Json;
+using TinCan.Tests.Integration.Helpers;
 
 namespace TinCan.Tests.Integration;
 
@@ -13,51 +13,7 @@ public class FinnhubServiceIntegrationTests
     [TestInitialize]
     public void Setup()
     {
-        // Try to find settings.json by traversing up from test output directory
-        var dir = Directory.GetCurrentDirectory();
-        string? settingsPath = null;
-
-        // Search up to 5 levels for settings.json in repo root or stock_bot/
-        for (int i = 0; i < 5; i++)
-        {
-            // Check root settings.json
-            var rootCandidate = Path.Combine(dir, "settings.json");
-            if (File.Exists(rootCandidate))
-            {
-                settingsPath = rootCandidate;
-                break;
-            }
-            // Check stock_bot/settings.json (where it lives)
-            var botCandidate = Path.Combine(dir, "stock_bot", "settings.json");
-            if (File.Exists(botCandidate))
-            {
-                settingsPath = botCandidate;
-                break;
-            }
-            var parent = Directory.GetParent(dir);
-            if (parent == null) break;
-            dir = parent.FullName;
-        }
-
-        // Also check environment variable
-        var envKey = Environment.GetEnvironmentVariable("FINNHUB_API_KEY");
-
-        if (!string.IsNullOrEmpty(settingsPath))
-        {
-            try
-            {
-                var json = File.ReadAllText(settingsPath);
-                var settings = JsonConvert.DeserializeObject<Settings>(json);
-                _apiKey = settings?.Providers?.Finnhub?.ApiKey;
-            }
-            catch { }
-        }
-
-        // Fallback to environment variable
-        if (string.IsNullOrEmpty(_apiKey) || _apiKey == "your_finnhub_api_key")
-        {
-            _apiKey = envKey;
-        }
+        _apiKey = FinnhubServiceSetupHelper.SetupAndGetApiKey();
     }
 
     [TestMethod]

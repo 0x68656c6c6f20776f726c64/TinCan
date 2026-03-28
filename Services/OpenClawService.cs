@@ -14,16 +14,8 @@ public class OpenClawService
         _authToken = authToken;
     }
 
-    public async Task<OpenClawResponse?> GetTradingSignalAsync(string symbol, double currentPrice, double high, double low, DateTime timestamp)
+    public async Task<OpenClawResponse?> GetTradingSignalAsync(MarketContext marketData)
     {
-        var marketData = new
-        {
-            symbol,
-            currentPrice,
-            high,
-            low,
-            timestamp = timestamp.ToString("o")
-        };
 
         var json = JsonSerializer.Serialize(marketData);
 

@@ -23,14 +23,7 @@ public class OpenClawStrategy : StrategyBase
 
         try
         {
-            var response = await _openClawService.GetTradingSignalAsync(
-                context.Symbol,
-                context.CurrentPrice.Price,
-                context.CurrentPrice.High,
-                context.CurrentPrice.Low,
-                context.CurrentPrice.Timestamp
-            );
-
+            var response = await _openClawService.GetTradingSignalAsync(context);
             return await BuildSignalFromResponseAsync(response);
         }
         catch

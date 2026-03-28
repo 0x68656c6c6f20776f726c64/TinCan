@@ -263,7 +263,7 @@ TinCan/
 * [x] Scheduler with configurable interval
 * [x] Unit & integration tests
 * [x] Signal Engine framework (IStrategy, StrategyBase)
-* [x] OpenClaw-powered strategy
+* [ ] OpenClaw-powered strategy
 * [ ] Basic signal engine (MA / RSI)
 * [ ] Paper trading integration (Alpaca)
 * [ ] Risk management module

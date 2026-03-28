@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.IO;
 using Newtonsoft.Json;
 using TinCan.Models;
@@ -91,5 +92,79 @@ public class StockFileService
         File.WriteAllText(filepath, JsonConvert.SerializeObject(data, Formatting.Indented));
 
         Console.WriteLine($"[INFO] {symbol}: wrote {data.Count} historical data point(s) -> {outputFile}");
+    }
+
+    public MarketContext LoadMarketContext(string symbol)
+    {
+        var lookup = LoadLookup();
+        var outputFile = GetOutputFile(symbol, lookup);
+        var filepath = Path.Combine(_resultsDir, outputFile);
+
+        var context = new MarketContext { Symbol = symbol };
+
+        if (!File.Exists(filepath))
+            return context;
+
+        string json;
+        try
+        {
+            json = File.ReadAllText(filepath);
+        }
+        catch
+        {
+            return context;
+        }
+
+        List<Dictionary<string, object>> entries;
+        try
+        {
+            entries = JsonConvert.DeserializeObject<List<Dictionary<string, object>>>(json) ?? [];
+        }
+        catch
+        {
+            return context;
+        }
+
+        var ctFormat = "yyyy-MM-dd HH:mm:ss 'CT'";
+        var utcFormat = "yyyy-MM-dd HH:mm:ss 'UTC'";
+        var formats = new[] { ctFormat, utcFormat };
+
+        foreach (var entry in entries)
+        {
+            if (!entry.TryGetValue("time", out var timeObj) ||
+                !entry.TryGetValue("price", out var priceObj) ||
+                !entry.TryGetValue("high", out var highObj) ||
+                !entry.TryGetValue("low", out var lowObj))
+                continue;
+
+            if (!DateTime.TryParseExact(timeObj?.ToString(), formats, CultureInfo.InvariantCulture, DateTimeStyles.None, out var timestamp))
+                continue;
+
+            if (!double.TryParse(priceObj?.ToString(), out var price) ||
+                !double.TryParse(highObj?.ToString(), out var high) ||
+                !double.TryParse(lowObj?.ToString(), out var low))
+                continue;
+
+            if (timeObj?.ToString()?.EndsWith("UTC") == true)
+                timestamp = timestamp.ToLocalTime();
+
+            context.PriceHistory.Add(new StockPrice
+            {
+                Symbol = symbol,
+                Price = price,
+                High = high,
+                Low = low,
+                Timestamp = timestamp
+            });
+        }
+
+        context.PriceHistory = context.PriceHistory
+            .OrderBy(p => p.Timestamp)
+            .ToList();
+
+        if (context.PriceHistory.Count > 0)
+            context.CurrentPrice = context.PriceHistory[^1];
+
+        return context;
     }
 }

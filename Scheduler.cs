@@ -1,7 +1,5 @@
 using System;
-using System.IO;
-using System.Threading;
-using Newtonsoft.Json;
+using TinCan.Interfaces;
 using TinCan.Models;
 using TinCan.Services;
 
@@ -10,24 +8,47 @@ namespace TinCan;
 public class Scheduler
 {
     private readonly Settings _settings;
-    private readonly string _projectDir;
-    private readonly FinnhubService _finnhubService;
+    private readonly IMarketDataProviderService _marketDataProviderService;
     private readonly StockFileService _stockFileService;
+    private bool _historicalDataFetched;
 
-    public Scheduler(Settings settings, string projectDir)
+    public Scheduler(Settings settings, IMarketDataProviderService marketDataProviderService, string projectDir)
     {
         _settings = settings;
-        _projectDir = projectDir;
-
-        var finnhub = _settings.Providers?.Finnhub;
-
-        _finnhubService = new FinnhubService(finnhub?.ApiKey ?? "", finnhub?.Timeout ?? 5);
-        // AppContext.BaseDirectory points to bin/ during dotnet run, use current dir instead
-        var baseDir = Directory.GetCurrentDirectory();
-        _stockFileService = new StockFileService(baseDir);
+        _marketDataProviderService = marketDataProviderService;
+        _stockFileService = new StockFileService(projectDir);
     }
 
     public int IntervalMinutes => _settings.Scheduler?.IntervalMinutes ?? 5;
+
+    public async Task RunAsync(CancellationToken cancellationToken = default)
+    {
+        await RunProvidersAsync();
+
+        if (_settings.Scheduler?.Historical?.Enabled == true)
+        {
+            return;
+        }
+
+        while (!cancellationToken.IsCancellationRequested)
+        {
+            try
+            {
+                await Task.Delay(TimeSpan.FromMinutes(IntervalMinutes), cancellationToken);
+                await RunProvidersAsync();
+            }
+            catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+            {
+                Console.WriteLine("[INFO] Shutting down...");
+                break;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[ERROR] {ex.Message}");
+                await Task.Delay(TimeSpan.FromSeconds(60), cancellationToken);
+            }
+        }
+    }
 
     public async Task RunProvidersAsync()
     {
@@ -53,7 +74,7 @@ public class Scheduler
         {
             try
             {
-                var price = await _finnhubService.FetchPriceAsync(symbol);
+                var price = await _marketDataProviderService.FetchPriceAsync(symbol);
                 if (price != null)
                 {
                     _stockFileService.UpdateStockFile(symbol, price.Price, price.High, price.Low, lookup);

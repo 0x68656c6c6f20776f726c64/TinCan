@@ -1,8 +1,9 @@
 using System;
 using System.IO;
-using System.Threading;
 using Newtonsoft.Json;
+using TinCan.Interfaces;
 using TinCan.Models;
+using TinCan.Services;
 
 namespace TinCan;
 
@@ -21,6 +22,17 @@ class Program
         return JsonConvert.DeserializeObject<Settings>(json) ?? new Settings();
     }
 
+    static IMarketDataProviderService CreateMarketDataProvider(Settings settings)
+    {
+        var finnhub = settings.Providers?.Finnhub;
+        if (finnhub?.Enabled == true && !string.IsNullOrWhiteSpace(finnhub.ApiKey))
+        {
+            return new FinnhubService(finnhub.ApiKey, finnhub.Timeout);
+        }
+
+        throw new InvalidOperationException("No enabled market data provider is configured.");
+    }
+
     static async Task Main(string[] args)
     {
         Console.WriteLine("==================================================");
@@ -29,34 +41,13 @@ class Program
 
         var settings = LoadSettings();
         var projectDir = Directory.GetCurrentDirectory();
-        var scheduler = new Scheduler(settings, projectDir);
-        var intervalMinutes = scheduler.IntervalMinutes;
+        var marketDataProviderService = CreateMarketDataProvider(settings);
+        var scheduler = new Scheduler(settings, marketDataProviderService, projectDir);
 
-        Console.WriteLine($" Interval: {intervalMinutes} minute(s)");
+        Console.WriteLine($" Interval: {scheduler.IntervalMinutes} minute(s)");
         Console.WriteLine($" Settings: {Path.GetFullPath(SETTINGS_FILE)}");
         Console.WriteLine("==================================================");
 
-        // Run once immediately
-        await scheduler.RunProvidersAsync();
-
-        // Main loop
-        while (true)
-        {
-            try
-            {
-                Thread.Sleep(TimeSpan.FromMinutes(intervalMinutes));
-                await scheduler.RunProvidersAsync();
-            }
-            catch (ThreadInterruptedException)
-            {
-                Console.WriteLine("[INFO] Shutting down...");
-                break;
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"[ERROR] {ex.Message}");
-                Thread.Sleep(TimeSpan.FromSeconds(60));
-            }
-        }
+        await scheduler.RunAsync();
     }
 }

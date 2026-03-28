@@ -89,6 +89,51 @@ public class FinnhubServiceTests
     }
 
     [TestMethod]
+    public async Task FetchHistoricalPricesAsync_ValidPayload_ReturnsOrderedHistory()
+    {
+        // Arrange
+        var json = @"{
+            ""c"": [150.25, 151.10],
+            ""h"": [151.00, 152.00],
+            ""l"": [149.50, 150.75],
+            ""t"": [1704067200, 1704153600],
+            ""s"": ""ok""
+        }";
+
+        _mockHttpHandler
+            .Protected()
+            .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.Is<HttpRequestMessage>(req => req.RequestUri!.ToString().Contains("stock/candle")),
+                ItExpr.IsAny<CancellationToken>()
+            )
+            .ReturnsAsync(new HttpResponseMessage
+            {
+                StatusCode = HttpStatusCode.OK,
+                Content = new StringContent(json)
+            });
+
+        var httpClient = new HttpClient(_mockHttpHandler.Object);
+        var service = new FinnhubService("test_key", httpClient);
+
+        // Act
+        var result = await service.FetchHistoricalPricesAsync(
+            "U",
+            "D",
+            new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+            new DateTime(2024, 1, 2, 0, 0, 0, DateTimeKind.Utc));
+
+        // Assert
+        Assert.AreEqual(2, result.Count);
+        Assert.AreEqual("U", result[0].Symbol);
+        Assert.AreEqual(150.25, result[0].Price);
+        Assert.AreEqual(151.00, result[0].High);
+        Assert.AreEqual(149.50, result[0].Low);
+        Assert.AreEqual(new DateTime(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc), result[0].Timestamp);
+        Assert.AreEqual(new DateTime(2024, 1, 2, 0, 0, 0, DateTimeKind.Utc), result[1].Timestamp);
+    }
+
+    [TestMethod]
     public void Constructor_WithHttpClient_InitializesCorrectly()
     {
         // Arrange
@@ -134,7 +179,12 @@ public class FinnhubServiceTests
                 }
             },
             ""scheduler"": {
-                ""interval_minutes"": 5
+                ""interval_minutes"": 5,
+                ""historical"": {
+                    ""enabled"": true,
+                    ""resolution"": ""D"",
+                    ""lookback_days"": 30
+                }
             }
         }";
 
@@ -147,5 +197,8 @@ public class FinnhubServiceTests
         Assert.AreEqual(10, settings.Providers?.Finnhub?.Timeout);
         Assert.IsTrue(settings.Providers?.Finnhub?.Enabled);
         Assert.AreEqual(5, settings.Scheduler?.IntervalMinutes);
+        Assert.IsTrue(settings.Scheduler?.Historical?.Enabled);
+        Assert.AreEqual("D", settings.Scheduler?.Historical?.Resolution);
+        Assert.AreEqual(30, settings.Scheduler?.Historical?.LookbackDays);
     }
 }

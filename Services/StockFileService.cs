@@ -69,4 +69,27 @@ public class StockFileService
 
         Console.WriteLine($"[INFO] {symbol}: ${price} -> {outputFile}");
     }
+
+    public void ReplaceStockFileWithHistory(string symbol, IEnumerable<StockPrice> history, StockLookup lookup)
+    {
+        var outputFile = GetOutputFile(symbol, lookup);
+        var filepath = Path.Combine(_resultsDir, outputFile);
+
+        var data = history
+            .OrderBy(price => price.Timestamp)
+            .Select(price => new Dictionary<string, object>
+            {
+                ["time"] = price.Timestamp.ToString("yyyy-MM-dd HH:mm:ss UTC"),
+                ["price"] = price.Price,
+                ["high"] = price.High,
+                ["low"] = price.Low
+            })
+            .Cast<object>()
+            .ToList();
+
+        Directory.CreateDirectory(_resultsDir);
+        File.WriteAllText(filepath, JsonConvert.SerializeObject(data, Formatting.Indented));
+
+        Console.WriteLine($"[INFO] {symbol}: wrote {data.Count} historical data point(s) -> {outputFile}");
+    }
 }

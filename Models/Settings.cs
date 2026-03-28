@@ -36,4 +36,19 @@ public class Scheduler
 {
     [JsonProperty("interval_minutes")]
     public int IntervalMinutes { get; set; } = 5;
+
+    [JsonProperty("historical")]
+    public HistoricalSchedulerConfig? Historical { get; set; }
+}
+
+public class HistoricalSchedulerConfig
+{
+    [JsonProperty("enabled")]
+    public bool Enabled { get; set; }
+
+    [JsonProperty("resolution")]
+    public string Resolution { get; set; } = "D";
+
+    [JsonProperty("lookback_days")]
+    public int LookbackDays { get; set; } = 30;
 }

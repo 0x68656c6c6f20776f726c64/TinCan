@@ -7,7 +7,12 @@
         }
     },
     "scheduler": {
-        "interval_minutes": 5
+        "interval_minutes": 5,
+        "historical": {
+            "enabled": false,
+            "resolution": "D",
+            "lookback_days": 30
+        }
     },
     "results_dir": "stock_bot/results"
 }

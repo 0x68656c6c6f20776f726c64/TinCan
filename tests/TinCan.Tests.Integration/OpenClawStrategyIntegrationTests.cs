@@ -52,9 +52,12 @@ public class OpenClawStrategyIntegrationTests
             }
         }
 
-        // Get OpenClaw gateway token from environment or config
-        var gatewayToken = Environment.GetEnvironment("OPENCLAW_GATEWAY_TOKEN") 
-            ?? "8e731c5a18b4bac134e65188f52104d007c9d52f60b616d6";
+        // Get OpenClaw gateway token from environment
+        var gatewayToken = Environment.GetEnvironment("OPENCLAW_GATEWAY_TOKEN");
+        if (string.IsNullOrEmpty(gatewayToken))
+        {
+            throw new InvalidOperationException("OPENCLAW_GATEWAY_TOKEN environment variable is required for integration tests");
+        }
         
         _openClawService = new OpenClawService(gatewayToken);
     }

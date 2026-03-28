@@ -265,7 +265,7 @@ TinCan/
 * [x] Scheduler with configurable interval
 * [x] Unit & integration tests
 * [x] Signal Engine - Strategy Base Framework (IStrategy, StrategyBase)
-* [x] OpenClaw decision agent (OpenClawSimpleStrategy)
+* [ ] OpenClaw decision agent (OpenClawSimpleStrategy)
 * [ ] Signal Engine - Core Engine
 * [ ] Signal Engine - Range Trading Strategy
 * [ ] Paper trading integration (Alpaca)

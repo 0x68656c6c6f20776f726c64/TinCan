@@ -6,11 +6,15 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AssemblyName>TinCan</AssemblyName>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>tincan</ToolCommandName>
+    <PackageOutputPath>/tmp/tincan-packages/</PackageOutputPath>
   </PropertyGroup>
 
   <ItemGroup>
     <Compile Remove="tests/**" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="4.1.0" />
   </ItemGroup>
 
 </Project>

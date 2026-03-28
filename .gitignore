@@ -9,3 +9,8 @@ tests/TinCan.Tests.Integration/obj/
 tests/TinCan.Tests.Unit/obj/
 obj/
 /.vs/
+# Vim swap files
+**/*.swp
+**/*.swo
+**/*~
+stock_bot/.settings.json.swp

@@ -23,14 +23,14 @@ public class OpenClawStrategy : StrategyBase
     protected virtual async Task<Signal> GenerateSignalAsync(MarketContext context)
     {
         var result = await _openClawService.GetStrategySuggestionAsync(context);
-        return BuildSignalFromResponse(result);
+        return await BuildSignalFromResponseAsync(result);
     }
 
-    protected virtual Signal BuildSignalFromResponse(OpenClawResult? result)
+    protected virtual async Task<Signal> BuildSignalFromResponseAsync(OpenClawResult? result)
     {
         if (result == null || string.IsNullOrEmpty(result.Suggestion))
         {
-            return CreateSignal(SignalType.Hold, "No response from OpenClaw", 0.0);
+            return await Task.FromResult(CreateSignal(SignalType.Hold, "No response from OpenClaw", 0.0));
         }
 
         var signalType = result.Suggestion.ToLowerInvariant() switch
@@ -40,6 +40,6 @@ public class OpenClawStrategy : StrategyBase
             _ => SignalType.Hold
         };
 
-        return CreateSignal(signalType, result.Reason ?? "", result.Confidence);
+        return await Task.FromResult(CreateSignal(signalType, result.Reason ?? "", result.Confidence));
     }
 }

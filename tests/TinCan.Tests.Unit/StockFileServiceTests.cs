@@ -253,20 +253,15 @@ public class StockFileServiceTests
     {
         var resultsDir = Path.Combine(_testDir, "stock_bot", "results");
         Directory.CreateDirectory(resultsDir);
-        var lookup = new StockLookup
-        {
-            Stocks = new Dictionary<string, StockInfo>
-            {
-                ["U"] = new StockInfo { Enabled = true, Output = "unity_stock.json" }
-            }
-        };
+        File.WriteAllText(Path.Combine(_testDir, "stock_bot", "stock_lookup.json"),
+            @"{""stocks"":{""U"":{""enabled"":true,""output"":""unity_stock.json""}}}");
         File.WriteAllText(Path.Combine(resultsDir, "unity_stock.json"),
             @"[{""time"":""2024-01-01 09:30:00 CT"",""price"":17.0,""high"":17.5,""low"":16.5}," +
             @"{""time"":""2024-01-02 09:30:00 CT"",""price"":18.0,""high"":18.5,""low"":17.5}," +
             @"{""time"":""2024-01-03 09:30:00 CT"",""price"":19.0,""high"":19.5,""low"":18.5}]");
 
         var service = new StockFileService(_testDir);
-        var result = service.LoadMarketContext("U", lookup);
+        var result = service.LoadMarketContext("U");
 
         Assert.AreEqual(3, result.PriceHistory.Count);
         Assert.AreEqual("U", result.Symbol);
@@ -300,19 +295,14 @@ public class StockFileServiceTests
     {
         var resultsDir = Path.Combine(_testDir, "stock_bot", "results");
         Directory.CreateDirectory(resultsDir);
-        var lookup = new StockLookup
-        {
-            Stocks = new Dictionary<string, StockInfo>
-            {
-                ["AAPL"] = new StockInfo { Enabled = true, Output = "aapl_stock.json" }
-            }
-        };
+        File.WriteAllText(Path.Combine(_testDir, "stock_bot", "stock_lookup.json"),
+            @"{""stocks"":{""AAPL"":{""enabled"":true,""output"":""aapl_stock.json""}}}");
         File.WriteAllText(Path.Combine(resultsDir, "aapl_stock.json"),
             @"[{""time"":""2024-01-15 14:30:00 UTC"",""price"":185.50,""high"":186.00,""low"":185.00}]");
 
         var service = new StockFileService(_testDir);
 
-        var result = service.LoadMarketContext("AAPL", lookup);
+        var result = service.LoadMarketContext("AAPL");
 
         Assert.AreEqual(1, result.PriceHistory.Count);
         Assert.IsNotNull(result.CurrentPrice);

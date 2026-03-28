@@ -94,9 +94,9 @@ public class StockFileService
         Console.WriteLine($"[INFO] {symbol}: wrote {data.Count} historical data point(s) -> {outputFile}");
     }
 
-    public MarketContext LoadMarketContext(string symbol, StockLookup? lookup = null)
+    public MarketContext LoadMarketContext(string symbol)
     {
-        lookup ??= LoadLookup();
+        var lookup = LoadLookup();
         var outputFile = GetOutputFile(symbol, lookup);
         var filepath = Path.Combine(_resultsDir, outputFile);
 

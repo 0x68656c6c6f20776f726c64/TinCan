@@ -34,9 +34,11 @@ Market Data → Signal Engine → Sandbox Simulation → Execution Layer → Ris
 
 ### 2. Signal Engine (AI-Driven)
 
-* Strategies are defined as **text inputs**
-* OpenClaw converts text into executable strategy logic
-* Outputs standardized `TradeSignal` objects (BUY / SELL / HOLD / etc.)
+* Strategies implement `IStrategy` interface
+* `StrategyBase` provides common functionality and `CreateSignal` helper
+* OpenClaw integration via `OpenClawStrategy` (calls OpenClaw agent CLI)
+* Outputs standardized `Signal` objects with `SignalType` (Buy / Sell / Hold), confidence, and reason
+* `OpenClawSimpleStrategy` extends `OpenClawStrategy` as a thin translation layer
 
 👉 No hardcoded strategies — fully dynamic and extensible
 
@@ -233,11 +235,19 @@ TinCan/
 ├── Scheduler.cs            # Main loop (runs every X minutes)
 ├── Models/
 │   ├── Settings.cs         # Configuration model
+│   ├── Signal.cs           # Signal model (SignalType, confidence, reason)
+│   ├── MarketContext.cs   # Market data context for strategies
 │   ├── StockLookup.cs     # Stock tracking config
 │   └── StockPrice.cs      # Price data model
+├── Strategies/
+│   ├── IStrategy.cs       # Strategy interface
+│   ├── StrategyBase.cs    # Base class with CreateSignal helper
+│   ├── OpenClawStrategy.cs    # OpenClaw integration (base)
+│   └── OpenClawSimpleStrategy.cs # OpenClaw strategy implementation
 ├── Services/
 │   ├── FinnhubService.cs  # Fetches stock prices
-│   └── StockFileService.cs# Reads/writes stock data
+│   ├── StockFileService.cs# Reads/writes stock data
+│   └── OpenClawService.cs # OpenClaw CLI wrapper
 ├── tests/
 │   ├── TinCan.Tests.Unit/        # Unit tests (mocked)
 │   └── TinCan.Tests.Integration/ # Integration tests (real API)
@@ -254,9 +264,11 @@ TinCan/
 * [x] Market data layer (Finnhub)
 * [x] Scheduler with configurable interval
 * [x] Unit & integration tests
-* [ ] Basic signal engine (MA / RSI)
+* [x] Signal Engine - Strategy Base Framework (IStrategy, StrategyBase)
+* [x] OpenClaw decision agent (OpenClawSimpleStrategy)
+* [ ] Signal Engine - Core Engine
+* [ ] Signal Engine - Range Trading Strategy
 * [ ] Paper trading integration (Alpaca)
-* [ ] OpenClaw decision agent
 * [ ] Risk management module
 * [ ] Backtesting framework
 

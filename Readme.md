@@ -12,197 +12,105 @@ The goal of this project is to provide a flexible foundation for building:
 
 ## 🧠 Architecture Overview
 
-TinCan is designed as a **safe, agent-driven trading system** where all AI-generated strategies are **validated through sandbox simulation before execution**.
-
 ```text
 Market Data → Signal Engine → Sandbox Simulation → Execution Layer → Risk Control
      ↑              ↓               ↓                ↓               ↓
   Finnhub      OpenClaw            E2B          Broker API     Position Mgmt
 ```
 
----
+## 📦 As a CLI Tool
 
-## 🔍 Core Concepts
+TinCan can be installed as a global CLI tool:
 
-### 1. Market Data Layer
+```bash
+dotnet tool install -g TinCan
+```
 
-* Source of truth for price data
-* Powered by **Finnhub**
-* Provides real-time and historical data for strategy evaluation
+Once installed, use the `tincan` command from anywhere:
 
----
-
-### 2. Signal Engine (AI-Driven)
-
-* Strategies are defined as **text inputs**
-* OpenClaw converts text into executable strategy logic
-* Outputs standardized `Signal` objects (Buy / Sell / Hold)
-
-👉 No hardcoded strategies — fully dynamic and extensible
+```bash
+tincan --help
+```
 
 ---
 
-### 3. Sandbox Simulation (Critical Safety Layer)
+## 🛠️ CLI Commands
 
-* All AI-generated strategies are executed in a secure sandbox using E2B
-* Runs backtesting and forward simulation using historical data
-* Prevents unsafe or unverified strategies from reaching live trading
+### `tincan fetch [--interval <minutes>] [--settings <path>]`
+Runs the scheduler loop — fetches prices on the configured interval. Same as the original `dotnet run` behavior.
+```bash
+tincan fetch --interval 5
+```
 
-#### Simulation Responsibilities:
+### `tincan price <symbol> [--json]`
+Fetches and prints the current price for a single symbol.
+```bash
+tincan price U
+tincan price AAPL --json
+```
 
-* Execute strategy logic deterministically
-* Simulate trades over time
-* Generate performance metrics:
+### `tincan backfill <symbol> --from <YYYY-MM-DD> --to <YYYY-MM-DD>`
+Fetches historical OHLCV data and replaces the result file.
+```bash
+tincan backfill U --from 2024-01-01 --to 2024-12-31
+```
 
-  * Profit & Loss (PnL)
-  * Max Drawdown
-  * Win Rate
-  * Trade Count
-  * Equity Curve
+### `tincan context <symbol> [--json]`
+Loads and displays the current `MarketContext` for a symbol (result file → structured data).
+```bash
+tincan context U --json
+```
 
-👉 This is the **core validation gate** before any real trade
+### `tincan orders [--open] [--symbol <symbol>] [--provider <provider>]`
+Lists orders from the broker. **Stub** — requires Story #13 (Execution Layer).
 
----
+### `tincan order <orderId> [--provider <provider>]`
+Gets details of a specific order. **Stub** — requires Story #13.
 
-### 4. Execution Layer
+### `tincan positions [--provider <provider>]`
+Views current positions from the broker. **Stub** — requires Story #13.
 
-* Converts validated `TradeSignal` into real trades
-* Integrates with broker APIs (e.g. Alpaca)
-* Handles:
-
-  * Order placement
-  * Order status tracking
-  * Execution feedback
-
----
-
-### 5. Risk Control Layer
-
-* Final safeguard before capital is deployed
-* Enforces:
-
-  * Position sizing limits
-  * Max loss per trade
-  * Exposure limits
-  * Kill switch conditions
-
-👉 Risk logic is **separate from AI strategy logic**
+### `tincan cancel <orderId> [--provider <provider>]`
+Cancels an open order. **Stub** — requires Story #13.
 
 ---
 
-## 🔄 End-to-End Workflow
-
-1. User submits strategy (natural language)
-2. OpenClaw generates executable strategy code
-3. Strategy runs inside E2B sandbox
-4. Simulation engine produces performance metrics
-5. User reviews results and adjusts risk parameters
-6. Approved strategy is deployed to execution layer
-7. Risk control enforces safety in live trading
-
----
-
-## ⚠️ Safety Principles
-
-* AI-generated code is **never executed directly in production**
-* All strategies must pass sandbox simulation
-* Execution layer is isolated from AI logic
-* Risk management overrides all signals
-
----
-
-## 🧩 Future Enhancements
-
-* Strategy versioning & comparison
-* Multi-strategy portfolio orchestration
-* Live vs simulated performance tracking
-* Advanced risk models (VaR, volatility targeting)
-* Distributed backtesting engine
-
----
-
-## 🚀 Getting Started
+## 🚀 Getting Started (Development)
 
 ### 1. Prerequisites
 
 * [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
 * API keys:
   * [Finnhub](https://finnhub.io) — free tier available
-  * [Alpaca](https://alpaca.markets) — for paper trading (optional)
 
-### 2. Clone the repo
-
-```bash
-git clone https://github.com/0x68656c6c6f20776f726c64/TinCan.git
-cd TinCan
-```
-
-### 3. Configure settings
-
-Copy the example settings and add your API key:
+### 2. Clone and build
 
 ```bash
-# Copy settings file
-cp stock_bot/settings.example.json stock_bot/settings.json
-
-# Edit with your API key
-# Linux/macOS:
-nano stock_bot/settings.json
-
-# Windows:
-notepad stock_bot/settings.json
-```
-
-Your `stock_bot/settings.json` should look like:
-
-```json
-{
-    "finnhub": {
-        "api_key": "YOUR_FINNHUB_API_KEY",
-        "timeout": 5
-    },
-    "alpaca": {
-        "api_key": "YOUR_ALPACA_API_KEY",
-        "api_secret": "YOUR_ALPACA_SECRET",
-        "base_url": "https://paper-api.alpaca.markets"
-    }
-}
-```
-
-> ⚠️ **Note:** `stock_bot/settings.json` is gitignored — your API keys stay local.
-
-### 4. Add stocks to track
-
-Edit `stock_bot/stock_lookup.json`:
-
-```json
-{
-    "stocks": {
-        "U": {
-            "enabled": true,
-            "name": "Unity Software",
-            "output": "unity_stock.json"
-        },
-        "AAPL": {
-            "enabled": true,
-            "name": "Apple",
-            "output": "aapl_stock.json"
-        }
-    }
-}
-```
-
-### 5. Run the app
-
-```bash
-# Restore dependencies
+git clone https://github.com/0x68656c6c6f20776f726c64/TinCan-CLI.git
+cd TinCan-CLI
 dotnet restore
+dotnet build
+```
 
-# Run the app (fetches every 5 minutes)
-dotnet run
+### 3. Configure
 
-# Or run once and exit
-dotnet run -- --once
+```bash
+cp stock_bot/settings.example.json stock_bot/settings.json
+# Edit stock_bot/settings.json with your Finnhub API key
+```
+
+### 4. Run
+
+```bash
+# Run as CLI
+dotnet run -- fetch
+
+# Or install as global tool
+dotnet pack -c Release
+dotnet tool install -g --add-source /tmp/tincan-packages/ .
+
+# Then use globally
+tincan fetch
 ```
 
 ---
@@ -210,64 +118,70 @@ dotnet run -- --once
 ## 🧪 Running Tests
 
 ```bash
-# Run all tests
 dotnet test
-
-# Unit tests only (no API key needed)
-dotnet test tests/TinCan.Tests.Unit/
-
-# Integration tests (requires API key)
-dotnet test tests/TinCan.Tests.Integration/
-
-# Or set API key via environment variable
-FINNHUB_API_KEY="your_key" dotnet test
 ```
 
 ---
 
-## ⚙️ Project Structure
+## 📁 Project Structure
 
 ```
 TinCan/
-├── Program.cs              # Entry point
-├── Scheduler.cs            # Main loop (runs every X minutes)
+├── Program.cs                  # CLI entry point
+├── Scheduler.cs               # Main loop
+├── Commands/                  # CLI command handlers
+│   ├── FetchCommand.cs
+│   ├── PriceCommand.cs
+│   ├── BackfillCommand.cs
+│   ├── ContextCommand.cs
+│   ├── OrdersCommand.cs
+│   ├── OrderCommand.cs
+│   ├── PositionsCommand.cs
+│   └── CancelCommand.cs
+├── Infrastructure/
+│   ├── SettingsLoader.cs      # Shared settings loading
+│   └── ProviderResolver.cs    # Provider resolution (flag > env > config)
 ├── Models/
-│   ├── Settings.cs         # Configuration model
-│   ├── StockLookup.cs     # Stock tracking config
-│   ├── StockPrice.cs      # Price data model
-│   ├── Signal.cs          # Trading signal model (Buy/Sell/Hold)
-│   └── MarketContext.cs   # Market data context for strategies
+│   ├── Settings.cs            # Configuration model
+│   ├── StockLookup.cs         # Stock tracking config
+│   ├── StockPrice.cs          # Price data model
+│   ├── Signal.cs              # Trading signal (Buy/Sell/Hold)
+│   ├── MarketContext.cs       # Market data context for strategies
+│   └── OpenClawResponse.cs    # OpenClaw agent response model
+├── Interfaces/
+│   ├── IMarketDataProviderService.cs   # Market data abstraction
+│   └── IStrategy.cs                   # Strategy interface
 ├── Strategies/
-│   ├── IStrategy.cs       # Strategy interface
-│   ├── StrategyBase.cs    # Abstract base class with helper methods
-│   ├── OpenClawStrategy.cs     # Base strategy that calls OpenClaw agent
-│   └── OpenClawSimpleStrategy.cs  # Simple child strategy
+│   ├── StrategyBase.cs                # Abstract base class
+│   ├── RangeTradingStrategy.cs         # Range trading strategy
+│   ├── OpenClawStrategy.cs            # OpenClaw agent-driven strategy
+│   └── OpenClawSimpleStrategy.cs       # Simple OpenClaw child strategy
 ├── Services/
-│   ├── FinnhubService.cs  # Fetches stock prices
-│   ├── StockFileService.cs# Reads/writes stock data
-│   └── OpenClawService.cs # Calls OpenClaw agent for trading signals
+│   ├── FinnhubService.cs       # Finnhub API integration
+│   ├── StockFileService.cs     # File-based stock data (read/write)
+│   └── OpenClawService.cs      # OpenClaw agent CLI integration
 ├── tests/
-│   ├── TinCan.Tests.Unit/        # Unit tests (mocked)
-│   └── TinCan.Tests.Integration/ # Integration tests (real API)
+│   ├── TinCan.Tests.Unit/
+│   └── TinCan.Tests.Integration/
 └── stock_bot/
-    ├── settings.json      # API keys (gitignored)
     ├── settings.example.json
-    └── stock_lookup.json  # Stocks to track
+    └── stock_lookup.json
 ```
 
 ---
 
-## 🧩 Roadmap
+## 🗺️ Roadmap
 
-* [x] Market data layer (Finnhub)
-* [x] Scheduler with configurable interval
-* [x] Unit & integration tests
-* [x] Signal Engine framework (IStrategy, StrategyBase)
-* [ ] OpenClaw-powered strategy
-* [ ] Basic signal engine (MA / RSI)
-* [ ] Paper trading integration (Alpaca)
-* [ ] Risk management module
-* [ ] Backtesting framework
+- [x] Market data layer (Finnhub)
+- [x] Scheduler with configurable interval
+- [x] Unit & integration tests
+- [x] Signal Engine framework (IStrategy, StrategyBase)
+- [x] OpenClaw-powered strategy
+- [x] CLI app with command dispatch
+- [x] LoadMarketContext (Story #9)
+- [ ] Execution Layer - Broker Abstraction + Paper Trading (Story #13)
+- [ ] Risk management module
+- [ ] Backtesting framework
 
 ---
 

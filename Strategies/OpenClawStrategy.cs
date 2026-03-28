@@ -5,7 +5,7 @@ namespace TinCan.Strategies;
 
 public class OpenClawStrategy : StrategyBase
 {
-    private readonly IOpenClawService _openClawService;
+    protected readonly IOpenClawService _openClawService;
 
     public OpenClawStrategy(IOpenClawService openClawService)
     {

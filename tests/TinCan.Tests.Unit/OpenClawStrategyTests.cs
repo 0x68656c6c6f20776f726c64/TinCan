@@ -22,7 +22,7 @@ public class OpenClawStrategyTests
                 Reason = "trend+momentum"
             });
 
-        var strategy = new OpenClawStrategy(mockService.Object);
+        var strategy = new OpenClawSimpleStrategy(mockService.Object);
         var context = new MarketContext
         {
             Symbol = "AAPL",
@@ -51,7 +51,7 @@ public class OpenClawStrategyTests
                 Reason = "overbought"
             });
 
-        var strategy = new OpenClawStrategy(mockService.Object);
+        var strategy = new OpenClawSimpleStrategy(mockService.Object);
         var context = new MarketContext
         {
             Symbol = "AAPL",
@@ -80,7 +80,7 @@ public class OpenClawStrategyTests
                 Reason = "no clear trend"
             });
 
-        var strategy = new OpenClawStrategy(mockService.Object);
+        var strategy = new OpenClawSimpleStrategy(mockService.Object);
         var context = new MarketContext
         {
             Symbol = "AAPL",
@@ -104,7 +104,7 @@ public class OpenClawStrategyTests
         mockService.Setup(s => s.GetStrategySuggestionAsync(It.IsAny<MarketContext>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((OpenClawResult?)null);
 
-        var strategy = new OpenClawStrategy(mockService.Object);
+        var strategy = new OpenClawSimpleStrategy(mockService.Object);
         var context = new MarketContext
         {
             Symbol = "AAPL",
@@ -128,7 +128,7 @@ public class OpenClawStrategyTests
         mockService.Setup(s => s.GetStrategySuggestionAsync(It.IsAny<MarketContext>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new Exception("Connection failed"));
 
-        var strategy = new OpenClawStrategy(mockService.Object);
+        var strategy = new OpenClawSimpleStrategy(mockService.Object);
         var context = new MarketContext
         {
             Symbol = "AAPL",
@@ -157,7 +157,7 @@ public class OpenClawStrategyTests
                 Reason = "test"
             });
 
-        var strategy = new OpenClawStrategy(mockService.Object);
+        var strategy = new OpenClawSimpleStrategy(mockService.Object);
         var context = new MarketContext
         {
             Symbol = "AAPL",
@@ -176,9 +176,9 @@ public class OpenClawStrategyTests
     {
         // Arrange
         var mockService = new Mock<IOpenClawService>();
-        var strategy = new OpenClawStrategy(mockService.Object);
+        var strategy = new OpenClawSimpleStrategy(mockService.Object);
 
         // Assert
-        Assert.AreEqual("OpenClawStrategy", strategy.Name);
+        Assert.AreEqual("OpenClawSimpleStrategy", strategy.Name);
     }
 }

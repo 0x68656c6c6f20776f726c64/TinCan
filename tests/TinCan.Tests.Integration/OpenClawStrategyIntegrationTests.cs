@@ -70,7 +70,7 @@ public class OpenClawStrategyIntegrationTests
         }
 
         // Arrange
-        var strategy = new OpenClawStrategy(_openClawService!);
+        var strategy = new OpenClawSimpleStrategy(_openClawService!);
         
         // Get real market data from Finnhub
         var finnhubService = new FinnhubService(_apiKey!);

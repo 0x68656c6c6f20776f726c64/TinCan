@@ -10,7 +10,7 @@ namespace TinCan.Tests.Unit;
 public class OpenClawStrategyTests
 {
     [TestMethod]
-    public void Name_ReturnsCorrectName()
+    public async Task Name_ReturnsCorrectName()
     {
         // Arrange
         var mockService = new Mock<IOpenClawService>();
@@ -21,7 +21,7 @@ public class OpenClawStrategyTests
     }
 
     [TestMethod]
-    public void Generate_DefaultImplementation_ReturnsHoldWithNotImplementedReason()
+    public async Task GenerateAsync_DefaultImplementation_ReturnsHoldWithNotImplementedReason()
     {
         // Arrange
         var mockService = new Mock<IOpenClawService>();
@@ -33,7 +33,7 @@ public class OpenClawStrategyTests
         };
 
         // Act
-        var signal = strategy.Generate(context);
+        var signal = await strategy.GenerateAsync(context);
 
         // Assert
         Assert.AreEqual(SignalType.Hold, signal.Type);

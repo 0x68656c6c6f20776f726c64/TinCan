@@ -12,21 +12,21 @@ public class StrategyBaseTests
         public override string Name => "MockStrategy";
         public Signal? ForcedSignal { get; set; }
 
-        public override Signal Generate(MarketContext context)
+        public override Task<Signal> GenerateAsync(MarketContext context)
         {
-            return ForcedSignal ?? CreateSignal(SignalType.Hold, "No signal configured", 0.0);
+            return Task.FromResult(ForcedSignal ?? CreateSignal(SignalType.Hold, "No signal configured", 0.0));
         }
     }
 
     [TestMethod]
-    public void IStrategy_Name_ReturnsCorrectName()
+    public async Task IStrategy_Name_ReturnsCorrectName()
     {
         var strategy = new MockStrategy();
         Assert.AreEqual("MockStrategy", strategy.Name);
     }
 
     [TestMethod]
-    public void Generate_WithValidContext_ReturnsSignal()
+    public async Task GenerateAsync_WithValidContext_ReturnsSignal()
     {
         var strategy = new MockStrategy
         {
@@ -44,7 +44,7 @@ public class StrategyBaseTests
             CurrentPrice = new StockPrice { Symbol = "AAPL", Price = 150.0 }
         };
 
-        var signal = strategy.Generate(context);
+        var signal = await strategy.GenerateAsync(context);
 
         Assert.AreEqual(SignalType.Buy, signal.Type);
         Assert.AreEqual("Test buy", signal.Reason);

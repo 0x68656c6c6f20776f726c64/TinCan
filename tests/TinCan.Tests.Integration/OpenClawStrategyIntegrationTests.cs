@@ -86,7 +86,7 @@ public class OpenClawStrategyIntegrationTests
         };
 
         // Act
-        var signal = strategy.Generate(context);
+        var signal = await strategy.GenerateAsync(context);
 
         // Assert
         Assert.IsNotNull(signal);

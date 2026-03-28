@@ -14,10 +14,10 @@ public class OpenClawStrategy : StrategyBase
 
     public override string Name => "OpenClawStrategy";
 
-    public override Signal Generate(MarketContext context)
+    public override Task<Signal> GenerateAsync(MarketContext context)
     {
         // Default implementation - subclasses should override
-        return CreateSignal(SignalType.Hold, "Not implemented", 0.0);
+        return Task.FromResult(CreateSignal(SignalType.Hold, "Not implemented", 0.0));
     }
 
     protected virtual async Task<Signal> GenerateSignalAsync(MarketContext context)

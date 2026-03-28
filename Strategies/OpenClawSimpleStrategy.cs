@@ -12,11 +12,11 @@ public class OpenClawSimpleStrategy : OpenClawStrategy
 
     public override string Name => "OpenClawSimpleStrategy";
 
-    public override Signal Generate(MarketContext context)
+    public override async Task<Signal> GenerateAsync(MarketContext context)
     {
         try
         {
-            var result = _openClawService.GetStrategySuggestionAsync(context).GetAwaiter().GetResult();
+            var result = await _openClawService.GetStrategySuggestionAsync(context);
             
             if (result == null)
             {

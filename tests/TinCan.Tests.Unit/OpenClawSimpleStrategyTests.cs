@@ -10,7 +10,7 @@ namespace TinCan.Tests.Unit;
 public class OpenClawSimpleStrategyTests
 {
     [TestMethod]
-    public void Generate_WithBuySuggestion_ReturnsBuySignal()
+    public async Task GenerateAsync_WithBuySuggestion_ReturnsBuySignal()
     {
         // Arrange
         var mockService = new Mock<IOpenClawService>();
@@ -30,7 +30,7 @@ public class OpenClawSimpleStrategyTests
         };
 
         // Act
-        var signal = strategy.Generate(context);
+        var signal = await strategy.GenerateAsync(context);
 
         // Assert
         Assert.AreEqual(SignalType.Buy, signal.Type);
@@ -39,7 +39,7 @@ public class OpenClawSimpleStrategyTests
     }
 
     [TestMethod]
-    public void Generate_WithSellSuggestion_ReturnsSellSignal()
+    public async Task GenerateAsync_WithSellSuggestion_ReturnsSellSignal()
     {
         // Arrange
         var mockService = new Mock<IOpenClawService>();
@@ -59,7 +59,7 @@ public class OpenClawSimpleStrategyTests
         };
 
         // Act
-        var signal = strategy.Generate(context);
+        var signal = await strategy.GenerateAsync(context);
 
         // Assert
         Assert.AreEqual(SignalType.Sell, signal.Type);
@@ -68,7 +68,7 @@ public class OpenClawSimpleStrategyTests
     }
 
     [TestMethod]
-    public void Generate_WithHoldSuggestion_ReturnsHoldSignal()
+    public async Task GenerateAsync_WithHoldSuggestion_ReturnsHoldSignal()
     {
         // Arrange
         var mockService = new Mock<IOpenClawService>();
@@ -88,7 +88,7 @@ public class OpenClawSimpleStrategyTests
         };
 
         // Act
-        var signal = strategy.Generate(context);
+        var signal = await strategy.GenerateAsync(context);
 
         // Assert
         Assert.AreEqual(SignalType.Hold, signal.Type);
@@ -97,7 +97,7 @@ public class OpenClawSimpleStrategyTests
     }
 
     [TestMethod]
-    public void Generate_WhenOpenClawReturnsNull_ReturnsHoldWithLowConfidence()
+    public async Task GenerateAsync_WhenOpenClawReturnsNull_ReturnsHoldWithLowConfidence()
     {
         // Arrange
         var mockService = new Mock<IOpenClawService>();
@@ -112,7 +112,7 @@ public class OpenClawSimpleStrategyTests
         };
 
         // Act
-        var signal = strategy.Generate(context);
+        var signal = await strategy.GenerateAsync(context);
 
         // Assert
         Assert.AreEqual(SignalType.Hold, signal.Type);
@@ -121,7 +121,7 @@ public class OpenClawSimpleStrategyTests
     }
 
     [TestMethod]
-    public void Generate_WhenOpenClawThrowsException_ReturnsHoldWithErrorReason()
+    public async Task GenerateAsync_WhenOpenClawThrowsException_ReturnsHoldWithErrorReason()
     {
         // Arrange
         var mockService = new Mock<IOpenClawService>();
@@ -136,7 +136,7 @@ public class OpenClawSimpleStrategyTests
         };
 
         // Act
-        var signal = strategy.Generate(context);
+        var signal = await strategy.GenerateAsync(context);
 
         // Assert
         Assert.AreEqual(SignalType.Hold, signal.Type);
@@ -145,7 +145,7 @@ public class OpenClawSimpleStrategyTests
     }
 
     [TestMethod]
-    public void Generate_ConfidenceClampedToValidRange()
+    public async Task GenerateAsync_ConfidenceClampedToValidRange()
     {
         // Arrange
         var mockService = new Mock<IOpenClawService>();
@@ -165,14 +165,14 @@ public class OpenClawSimpleStrategyTests
         };
 
         // Act
-        var signal = strategy.Generate(context);
+        var signal = await strategy.GenerateAsync(context);
 
         // Assert
         Assert.AreEqual(1.0, signal.Confidence); // Clamped to 1.0
     }
 
     [TestMethod]
-    public void Name_ReturnsCorrectName()
+    public async Task Name_ReturnsCorrectName()
     {
         // Arrange
         var mockService = new Mock<IOpenClawService>();

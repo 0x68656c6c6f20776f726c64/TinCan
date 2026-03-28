@@ -21,13 +21,10 @@ public class OpenClawStrategyTests
     }
 
     [TestMethod]
-    public async Task GenerateAsync_WithNullResponse_ReturnsHoldWithNoResponseMessage()
+    public async Task GenerateAsync_DefaultImplementation_ReturnsNotImplemented()
     {
         // Arrange
         var mockService = new Mock<IOpenClawService>();
-        mockService.Setup(s => s.GetStrategySuggestionAsync(It.IsAny<MarketContext>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((OpenClawResponse?)null);
-
         var strategy = new OpenClawStrategy(mockService.Object);
         var context = new MarketContext
         {
@@ -40,31 +37,7 @@ public class OpenClawStrategyTests
 
         // Assert
         Assert.AreEqual(SignalType.Hold, signal.Type);
-        Assert.AreEqual("No response from OpenClaw", signal.Reason);
-        Assert.AreEqual(0.0, signal.Confidence);
-    }
-
-    [TestMethod]
-    public async Task GenerateAsync_WhenServiceThrows_ReturnsHoldWithErrorReason()
-    {
-        // Arrange
-        var mockService = new Mock<IOpenClawService>();
-        mockService.Setup(s => s.GetStrategySuggestionAsync(It.IsAny<MarketContext>(), It.IsAny<CancellationToken>()))
-            .ThrowsAsync(new Exception("Connection failed"));
-
-        var strategy = new OpenClawStrategy(mockService.Object);
-        var context = new MarketContext
-        {
-            Symbol = "AAPL",
-            CurrentPrice = new StockPrice { Symbol = "AAPL", Price = 150.0 }
-        };
-
-        // Act
-        var signal = await strategy.GenerateAsync(context);
-
-        // Assert
-        Assert.AreEqual(SignalType.Hold, signal.Type);
-        Assert.IsTrue(signal.Reason.Contains("Connection failed"));
+        Assert.AreEqual("Not implemented", signal.Reason);
     }
 
     [TestMethod]

@@ -7,7 +7,7 @@ public class OpenClawStrategy : StrategyBase
 {
     public override string Name => "OpenClawStrategy";
 
-    private readonly OpenClawService _openClawService;
+    protected readonly OpenClawService _openClawService;
 
     public OpenClawStrategy(OpenClawService openClawService)
     {
@@ -16,6 +16,11 @@ public class OpenClawStrategy : StrategyBase
 
     public override Signal Generate(MarketContext context)
     {
+        return GenerateSignalAsync(context).GetAwaiter().GetResult();
+    }
+
+    protected virtual async Task<Signal> GenerateSignalAsync(MarketContext context)
+    {
         if (context.CurrentPrice == null)
         {
             return CreateSignal(SignalType.Hold, "No current price available", 0.0);
@@ -23,13 +28,13 @@ public class OpenClawStrategy : StrategyBase
 
         try
         {
-            var response = _openClawService.GetTradingSignalAsync(
+            var response = await _openClawService.GetTradingSignalAsync(
                 context.Symbol,
                 context.CurrentPrice.Price,
                 context.CurrentPrice.High,
                 context.CurrentPrice.Low,
                 context.CurrentPrice.Timestamp
-            ).GetAwaiter().GetResult();
+            );
 
             return BuildSignalFromResponse(response);
         }

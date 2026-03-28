@@ -62,7 +62,7 @@ public class OpenClawStrategyIntegrationTests
     }
 
     [TestMethod]
-    public async Task Generate_WithRealFinnhubData_ReturnsValidSignal()
+    public async Task GenerateAsync_WithRealFinnhubData_ReturnsValidSignal()
     {
         if (string.IsNullOrEmpty(_apiKey)) 
             Assert.Inconclusive("API key not configured - set FINNHUB_API_KEY env or add settings.json");
@@ -86,7 +86,7 @@ public class OpenClawStrategyIntegrationTests
         var strategy = new OpenClawStrategy(openClawService);
 
         // Act: Generate signal
-        var signal = await strategy.Generate(context);
+        var signal = await strategy.GenerateAsync(context);
 
         // Assert: Signal is valid
         Assert.IsNotNull(signal);
@@ -99,7 +99,7 @@ public class OpenClawStrategyIntegrationTests
     }
 
     [TestMethod]
-    public async Task Generate_WithRealFinnhubData_OpenClawSimpleStrategy_ReturnsValidSignal()
+    public async Task GenerateAsync_WithRealFinnhubData_OpenClawSimpleStrategy_ReturnsValidSignal()
     {
         if (string.IsNullOrEmpty(_apiKey)) 
             Assert.Inconclusive("API key not configured - set FINNHUB_API_KEY env or add settings.json");
@@ -123,7 +123,7 @@ public class OpenClawStrategyIntegrationTests
         var strategy = new OpenClawSimpleStrategy(openClawService);
 
         // Act: Generate signal
-        var signal = await strategy.Generate(context);
+        var signal = await strategy.GenerateAsync(context);
 
         // Assert: Signal is valid
         Assert.IsNotNull(signal);

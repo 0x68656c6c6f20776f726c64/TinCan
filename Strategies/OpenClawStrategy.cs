@@ -14,7 +14,7 @@ public class OpenClawStrategy : StrategyBase
         _openClawService = openClawService;
     }
 
-    public override async Task<Signal> Generate(MarketContext context)
+    public override async Task<Signal> GenerateAsync(MarketContext context)
     {
         if (context.CurrentPrice == null)
         {
@@ -31,7 +31,7 @@ public class OpenClawStrategy : StrategyBase
                 context.CurrentPrice.Timestamp
             );
 
-            return await BuildSignalFromResponse(response);
+            return await BuildSignalFromResponseAsync(response);
         }
         catch
         {
@@ -39,7 +39,7 @@ public class OpenClawStrategy : StrategyBase
         }
     }
 
-    protected virtual async Task<Signal> BuildSignalFromResponse(OpenClawResponse? response)
+    protected virtual async Task<Signal> BuildSignalFromResponseAsync(OpenClawResponse? response)
     {
         if (response == null || string.IsNullOrEmpty(response.Suggestion))
         {

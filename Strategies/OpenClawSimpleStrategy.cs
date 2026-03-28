@@ -12,7 +12,7 @@ public class OpenClawSimpleStrategy : OpenClawStrategy
     {
     }
 
-    public override async Task<Signal> Generate(MarketContext context)
+    public override async Task<Signal> GenerateAsync(MarketContext context)
     {
         if (context.CurrentPrice == null)
         {
@@ -29,7 +29,7 @@ public class OpenClawSimpleStrategy : OpenClawStrategy
                 context.CurrentPrice.Timestamp
             );
 
-            return await BuildSignalFromResponse(response);
+            return await BuildSignalFromResponseAsync(response);
         }
         catch
         {

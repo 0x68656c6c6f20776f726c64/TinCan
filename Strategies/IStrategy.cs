@@ -5,5 +5,5 @@ namespace TinCan.Strategies;
 public interface IStrategy
 {
     string Name { get; }
-    Task<Signal> Generate(MarketContext context);
+    Task<Signal> GenerateAsync(MarketContext context);
 }

@@ -27,7 +27,7 @@ public class OpenClawSimpleStrategyTests
     }
 
     [TestMethod]
-    public void Generate_WithNullCurrentPrice_ReturnsHold()
+    public async Task Generate_WithNullCurrentPrice_ReturnsHold()
     {
         var mockService = new Mock<OpenClawService>("http://localhost", "token");
         var strategy = new OpenClawSimpleStrategy(mockService.Object);
@@ -38,7 +38,7 @@ public class OpenClawSimpleStrategyTests
             CurrentPrice = null
         };
 
-        var signal = strategy.Generate(context);
+        var signal = await strategy.Generate(context);
 
         Assert.AreEqual(SignalType.Hold, signal.Type);
         Assert.AreEqual("No current price available", signal.Reason);

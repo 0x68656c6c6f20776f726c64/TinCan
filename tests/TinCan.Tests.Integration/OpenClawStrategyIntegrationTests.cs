@@ -86,7 +86,7 @@ public class OpenClawStrategyIntegrationTests
         var strategy = new OpenClawStrategy(openClawService);
 
         // Act: Generate signal
-        var signal = strategy.Generate(context);
+        var signal = await strategy.Generate(context);
 
         // Assert: Signal is valid
         Assert.IsNotNull(signal);
@@ -123,7 +123,7 @@ public class OpenClawStrategyIntegrationTests
         var strategy = new OpenClawSimpleStrategy(openClawService);
 
         // Act: Generate signal
-        var signal = strategy.Generate(context);
+        var signal = await strategy.Generate(context);
 
         // Assert: Signal is valid
         Assert.IsNotNull(signal);

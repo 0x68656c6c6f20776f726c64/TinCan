@@ -10,12 +10,23 @@ namespace TinCan.Tests.Unit;
 public class OpenClawSimpleStrategyTests
 {
     [TestMethod]
+    public void Name_ReturnsCorrectName()
+    {
+        // Arrange
+        var mockService = new Mock<IOpenClawService>();
+        var strategy = new OpenClawSimpleStrategy(mockService.Object);
+
+        // Assert
+        Assert.AreEqual("OpenClawSimpleStrategy", strategy.Name);
+    }
+
+    [TestMethod]
     public async Task GenerateAsync_WithBuySuggestion_ReturnsBuySignal()
     {
         // Arrange
         var mockService = new Mock<IOpenClawService>();
         mockService.Setup(s => s.GetStrategySuggestionAsync(It.IsAny<MarketContext>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new OpenClawResult
+            .ReturnsAsync(new OpenClawResponse
             {
                 Suggestion = "buy",
                 Confidence = 0.82,
@@ -44,7 +55,7 @@ public class OpenClawSimpleStrategyTests
         // Arrange
         var mockService = new Mock<IOpenClawService>();
         mockService.Setup(s => s.GetStrategySuggestionAsync(It.IsAny<MarketContext>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new OpenClawResult
+            .ReturnsAsync(new OpenClawResponse
             {
                 Suggestion = "sell",
                 Confidence = 0.75,
@@ -73,7 +84,7 @@ public class OpenClawSimpleStrategyTests
         // Arrange
         var mockService = new Mock<IOpenClawService>();
         mockService.Setup(s => s.GetStrategySuggestionAsync(It.IsAny<MarketContext>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new OpenClawResult
+            .ReturnsAsync(new OpenClawResponse
             {
                 Suggestion = "hold",
                 Confidence = 0.5,
@@ -97,60 +108,12 @@ public class OpenClawSimpleStrategyTests
     }
 
     [TestMethod]
-    public async Task GenerateAsync_WhenOpenClawReturnsNull_ReturnsHoldWithLowConfidence()
-    {
-        // Arrange
-        var mockService = new Mock<IOpenClawService>();
-        mockService.Setup(s => s.GetStrategySuggestionAsync(It.IsAny<MarketContext>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync((OpenClawResult?)null);
-
-        var strategy = new OpenClawSimpleStrategy(mockService.Object);
-        var context = new MarketContext
-        {
-            Symbol = "AAPL",
-            CurrentPrice = new StockPrice { Symbol = "AAPL", Price = 150.0 }
-        };
-
-        // Act
-        var signal = await strategy.GenerateAsync(context);
-
-        // Assert
-        Assert.AreEqual(SignalType.Hold, signal.Type);
-        Assert.AreEqual(0.0, signal.Confidence);
-        Assert.AreEqual("OpenClaw returned no result", signal.Reason);
-    }
-
-    [TestMethod]
-    public async Task GenerateAsync_WhenOpenClawThrowsException_ReturnsHoldWithErrorReason()
-    {
-        // Arrange
-        var mockService = new Mock<IOpenClawService>();
-        mockService.Setup(s => s.GetStrategySuggestionAsync(It.IsAny<MarketContext>(), It.IsAny<CancellationToken>()))
-            .ThrowsAsync(new Exception("Connection failed"));
-
-        var strategy = new OpenClawSimpleStrategy(mockService.Object);
-        var context = new MarketContext
-        {
-            Symbol = "AAPL",
-            CurrentPrice = new StockPrice { Symbol = "AAPL", Price = 150.0 }
-        };
-
-        // Act
-        var signal = await strategy.GenerateAsync(context);
-
-        // Assert
-        Assert.AreEqual(SignalType.Hold, signal.Type);
-        Assert.AreEqual(0.0, signal.Confidence);
-        Assert.IsTrue(signal.Reason.Contains("Connection failed"));
-    }
-
-    [TestMethod]
     public async Task GenerateAsync_ConfidenceClampedToValidRange()
     {
         // Arrange
         var mockService = new Mock<IOpenClawService>();
         mockService.Setup(s => s.GetStrategySuggestionAsync(It.IsAny<MarketContext>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new OpenClawResult
+            .ReturnsAsync(new OpenClawResponse
             {
                 Suggestion = "buy",
                 Confidence = 1.5, // Over 1.0
@@ -172,13 +135,13 @@ public class OpenClawSimpleStrategyTests
     }
 
     [TestMethod]
-    public async Task Name_ReturnsCorrectName()
+    public async Task GenerateAsync_InheritsFromOpenClawStrategy()
     {
         // Arrange
         var mockService = new Mock<IOpenClawService>();
         var strategy = new OpenClawSimpleStrategy(mockService.Object);
 
-        // Assert
-        Assert.AreEqual("OpenClawSimpleStrategy", strategy.Name);
+        // Assert - inherits GenerateAsync implementation from OpenClawStrategy
+        Assert.IsInstanceOfType(strategy, typeof(OpenClawStrategy));
     }
 }

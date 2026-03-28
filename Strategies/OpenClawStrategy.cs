@@ -14,32 +14,29 @@ public class OpenClawStrategy : StrategyBase
 
     public override string Name => "OpenClawStrategy";
 
-    public override Task<Signal> GenerateAsync(MarketContext context)
+    public override async Task<Signal> GenerateAsync(MarketContext context)
     {
-        // Default implementation - subclasses should override
-        return Task.FromResult(CreateSignal(SignalType.Hold, "Not implemented", 0.0));
-    }
-
-    protected virtual async Task<Signal> GenerateSignalAsync(MarketContext context)
-    {
-        var result = await _openClawService.GetStrategySuggestionAsync(context);
-        return await BuildSignalFromResponseAsync(result);
-    }
-
-    protected virtual async Task<Signal> BuildSignalFromResponseAsync(OpenClawResult? result)
-    {
-        if (result == null || string.IsNullOrEmpty(result.Suggestion))
+        try
         {
-            return await Task.FromResult(CreateSignal(SignalType.Hold, "No response from OpenClaw", 0.0));
+            var result = await _openClawService.GetStrategySuggestionAsync(context);
+            
+            if (result == null || string.IsNullOrEmpty(result.Suggestion))
+            {
+                return CreateSignal(SignalType.Hold, "No response from OpenClaw", 0.0);
+            }
+
+            var signalType = result.Suggestion.ToLowerInvariant() switch
+            {
+                "buy" => SignalType.Buy,
+                "sell" => SignalType.Sell,
+                _ => SignalType.Hold
+            };
+
+            return CreateSignal(signalType, result.Reason ?? "", result.Confidence);
         }
-
-        var signalType = result.Suggestion.ToLowerInvariant() switch
+        catch (Exception ex)
         {
-            "buy" => SignalType.Buy,
-            "sell" => SignalType.Sell,
-            _ => SignalType.Hold
-        };
-
-        return await Task.FromResult(CreateSignal(signalType, result.Reason ?? "", result.Confidence));
+            return CreateSignal(SignalType.Hold, $"OpenClaw error: {ex.Message}", 0.0);
+        }
     }
 }

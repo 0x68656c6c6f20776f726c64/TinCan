@@ -4,16 +4,9 @@ using TinCan.Models;
 
 namespace TinCan.Services;
 
-public class OpenClawResult
-{
-    public string Suggestion { get; set; } = "hold";
-    public double Confidence { get; set; } = 0.0;
-    public string Reason { get; set; } = "";
-}
-
 public interface IOpenClawService
 {
-    Task<OpenClawResult?> GetStrategySuggestionAsync(MarketContext context, CancellationToken cancellationToken = default);
+    Task<OpenClawResponse?> GetStrategySuggestionAsync(MarketContext context, CancellationToken cancellationToken = default);
 }
 
 public class OpenClawService : IOpenClawService
@@ -29,7 +22,7 @@ public class OpenClawService : IOpenClawService
         _agentId = agentId;
     }
 
-    public async Task<OpenClawResult?> GetStrategySuggestionAsync(MarketContext context, CancellationToken cancellationToken = default)
+    public async Task<OpenClawResponse?> GetStrategySuggestionAsync(MarketContext context, CancellationToken cancellationToken = default)
     {
         var prompt = BuildPrompt(context);
         var result = await ExecuteOpenClawAsync(prompt, cancellationToken);
@@ -81,7 +74,7 @@ Respond with ONLY the JSON object, no other text.";
         return output.Trim();
     }
 
-    private OpenClawResult? ParseResponse(string response)
+    private OpenClawResponse? ParseResponse(string response)
     {
         try
         {
@@ -95,10 +88,10 @@ Respond with ONLY the JSON object, no other text.";
                 var doc = JsonDocument.Parse(json);
                 var root = doc.RootElement;
 
-                return new OpenClawResult
+                return new OpenClawResponse
                 {
                     Suggestion = root.TryGetProperty("suggestion", out var suggestion) 
-                        ? suggestion.GetString()?.ToLower() ?? "hold" 
+                        ? suggestion.GetString()?.ToLowerInvariant() ?? "hold" 
                         : "hold",
                     Confidence = root.TryGetProperty("confidence", out var confidence) 
                         ? confidence.GetDouble() 

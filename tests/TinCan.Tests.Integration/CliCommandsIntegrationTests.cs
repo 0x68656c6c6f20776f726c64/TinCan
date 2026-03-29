@@ -23,7 +23,7 @@ public class CliCommandsIntegrationTests
     }
 
     [TestMethod]
-    public async Task PriceCommand_HappyPath_ReturnsValidPrice()
+    public async Task PriceCommand_ReturnsValidPrice()
     {
         if (string.IsNullOrEmpty(_apiKey)) Assert.Inconclusive("API key not configured");
 
@@ -44,7 +44,7 @@ public class CliCommandsIntegrationTests
     }
 
     [TestMethod]
-    public async Task BackfillCommand_HappyPath_FetchesHistoricalData()
+    public async Task BackfillCommand_FetchesHistoricalData()
     {
         if (string.IsNullOrEmpty(_apiKey)) Assert.Inconclusive("API key not configured");
 
@@ -76,7 +76,7 @@ public class CliCommandsIntegrationTests
     }
 
     [TestMethod]
-    public void ContextCommand_HappyPath_LoadsMarketContext()
+    public void ContextCommand_LoadsMarketContext()
     {
         // Create a temp directory with proper structure
         var tempDir = Path.Combine(Path.GetTempPath(), $"tincan_test_{Guid.NewGuid()}");
@@ -121,7 +121,7 @@ public class CliCommandsIntegrationTests
     }
 
     [TestMethod]
-    public void MarketDataProviderFactory_HappyPath_CreatesFinnhubService()
+    public void MarketDataProviderFactory_CreatesFinnhubService()
     {
         if (string.IsNullOrEmpty(_apiKey)) Assert.Inconclusive("API key not configured");
 
@@ -184,21 +184,21 @@ public class CliCommandsIntegrationTests
     }
 
     [TestMethod]
-    public void ProviderResolver_HappyPath_UsesPaperAsDefault()
+    public void ProviderResolver_UsesPaperAsDefault()
     {
         var result = ProviderResolver.Resolve(null, null);
         Assert.AreEqual("paper", result);
     }
 
     [TestMethod]
-    public void ProviderResolver_HappyPath_UsesCliProviderWhenProvided()
+    public void ProviderResolver_UsesCliProviderWhenProvided()
     {
         var result = ProviderResolver.Resolve("alpaca", "paper");
         Assert.AreEqual("alpaca", result);
     }
 
     [TestMethod]
-    public void SettingsLoader_HappyPath_LoadsValidSettings()
+    public void SettingsLoader_LoadsValidSettings()
     {
         var settings = SettingsLoader.Load();
 

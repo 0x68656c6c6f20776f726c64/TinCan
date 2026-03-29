@@ -12,9 +12,16 @@ public class CliCommandsIntegrationTests
     [TestInitialize]
     public void Setup()
     {
-        // Get Finnhub API key from environment or settings
-        _apiKey = Environment.GetEnvironmentVariable("FINNHUB_API_KEY") ?? "";
-        if (string.IsNullOrEmpty(_apiKey))
+        _apiKey = FinnhubServiceSetupHelper.SetupAndGetApiKey();
+        _projectDir = Directory.GetCurrentDirectory();
+    }
+
+    [TestMethod]
+    public async Task PriceCommand_ReturnsValidPrice()
+    {
+        if (string.IsNullOrEmpty(_apiKey)) Assert.Inconclusive("API key not configured");
+
+        var settings = new Settings
         {
             var settingsPath = Path.Combine(GetTinCanDir(), "settings.json");
             if (File.Exists(settingsPath))
@@ -67,14 +74,16 @@ public class CliCommandsIntegrationTests
         }
     }
 
-    private static string GetTinCanDir()
+    [TestMethod]
+    public void ContextCommand_LoadsMarketContext()
     {
         var testDir = Directory.GetCurrentDirectory();
         // Navigate from bin/Debug/net10.0 to project root
         return Path.GetFullPath(Path.Combine(testDir, "..", "..", "..", "..", ".."));
     }
 
-    private async Task<ProcessResult> RunCliAsync(string args, int timeoutSeconds = 30)
+    [TestMethod]
+    public void MarketDataProviderFactory_CreatesFinnhubService()
     {
         var psi = new ProcessStartInfo
         {
@@ -198,7 +207,7 @@ public class CliCommandsIntegrationTests
     }
 
     [TestMethod]
-    public async Task PriceCommand_WithJsonFlag_ReturnsJsonOutput()
+    public void ProviderResolver_UsesPaperAsDefault()
     {
         if (string.IsNullOrEmpty(_apiKey))
         {
@@ -234,7 +243,7 @@ public class CliCommandsIntegrationTests
     }
 
     [TestMethod]
-    public void HelpCommand_ShowsHelp()
+    public void ProviderResolver_UsesCliProviderWhenProvided()
     {
         // Just verify dotnet run works and shows help
         var psi = new ProcessStartInfo
@@ -260,7 +269,7 @@ public class CliCommandsIntegrationTests
     }
 
     [TestMethod]
-    public void PriceCommand_Help_ShowsPriceCommandHelp()
+    public void SettingsLoader_LoadsValidSettings()
     {
         var psi = new ProcessStartInfo
         {

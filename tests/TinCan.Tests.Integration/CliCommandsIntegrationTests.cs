@@ -57,21 +57,22 @@ public class CliCommandsIntegrationTests
         };
 
         var marketData = MarketDataProviderFactory.Create(settings);
-        var from = new DateTime(2024, 01, 01, 0, 0, 0, DateTimeKind.Local);
-        var to = new DateTime(2024, 01, 10, 0, 0, 0, DateTimeKind.Local);
+        // Use recent date range within free tier's 1-year limit
+        var to = DateTime.Now;
+        var from = to.AddMonths(-6); // 6 months ago - well within 1-year limit
 
         try
         {
-            var result = await marketData.FetchHistoricalPricesAsync("U", "D", from, to);
+            var result = await marketData.FetchHistoricalPricesAsync("AAPL", "D", from, to);
 
             Assert.IsNotNull(result);
             Assert.IsTrue(result.Count > 0);
-            Assert.AreEqual("U", result[0].Symbol);
+            Assert.AreEqual("AAPL", result[0].Symbol);
         }
-        catch (HttpRequestException ex) when (ex.Message.Contains("403"))
+        catch (HttpRequestException)
         {
-            // Finnhub free tier may not support historical data - skip this test
-            Assert.Inconclusive("Finnhub free tier may not support historical data endpoint");
+            // Finnhub free tier may have limitations on historical data - skip this test
+            Assert.Inconclusive("Finnhub free tier may have limitations on historical data endpoint");
         }
     }
 

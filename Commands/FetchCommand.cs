@@ -1,4 +1,5 @@
 using McMaster.Extensions.CommandLineUtils;
+using TinCan.Interfaces;
 
 namespace TinCan.Commands;
 
@@ -19,14 +20,16 @@ public static class FetchCommand
             if (providerOpt.HasValue())
                 Console.WriteLine($"[INFO] Provider: {providerOpt.Value()}");
 
-            var finnhub = settings.Providers?.Finnhub;
-            if (finnhub?.Enabled != true || string.IsNullOrWhiteSpace(finnhub.ApiKey))
+            IMarketDataProviderService marketData;
+            try
             {
-                Console.WriteLine("[ERROR] Finnhub provider is not configured in settings.json");
+                marketData = Infrastructure.MarketDataProviderFactory.Create(settings);
+            }
+            catch (InvalidOperationException ex)
+            {
+                Console.WriteLine($"[ERROR] {ex.Message}");
                 return 1;
             }
-
-            var marketData = new Services.FinnhubService(finnhub.ApiKey, finnhub.Timeout);
             var scheduler = new Scheduler(settings, marketData, projectDir);
 
             var interval = intervalOpt.HasValue() ? intervalOpt.ParsedValue : 5;

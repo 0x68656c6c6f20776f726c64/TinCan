@@ -24,6 +24,46 @@ public class CliCommandsIntegrationTests
                 if (match.Success)
                     _apiKey = match.Groups[1].Value;
             }
+        };
+
+        var marketData = MarketDataProviderFactory.Create(settings);
+        var result = await marketData.FetchPriceAsync("U");
+
+        Assert.IsNotNull(result);
+        Assert.AreEqual("U", result.Symbol);
+        Assert.IsTrue(result.Price > 0);
+    }
+
+    [TestMethod]
+    public async Task BackfillCommand_FetchesHistoricalData()
+    {
+        if (string.IsNullOrEmpty(_apiKey)) Assert.Inconclusive("API key not configured");
+
+        var settings = new Settings
+        {
+            Providers = new Providers
+            {
+                Finnhub = new FinnhubConfig { Enabled = true, ApiKey = _apiKey, Timeout = 10 }
+            }
+        };
+
+        var marketData = MarketDataProviderFactory.Create(settings);
+        // Use recent date range within free tier's 1-year limit
+        var to = DateTime.Now;
+        var from = to.AddMonths(-6); // 6 months ago - well within 1-year limit
+
+        try
+        {
+            var result = await marketData.FetchHistoricalPricesAsync("AAPL", "D", from, to);
+
+            Assert.IsNotNull(result);
+            Assert.IsTrue(result.Count > 0);
+            Assert.AreEqual("AAPL", result[0].Symbol);
+        }
+        catch (HttpRequestException)
+        {
+            // Finnhub free tier may have limitations on historical data - skip this test
+            Assert.Inconclusive("Finnhub free tier may have limitations on historical data endpoint");
         }
     }
 

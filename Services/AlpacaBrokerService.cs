@@ -29,9 +29,16 @@ public class AlpacaBrokerService : IBrokerService
         var json = await response.Content.ReadFromJsonAsync<JsonElement>();
         return new BrokerBalance
         {
-            Cash = json.GetProperty("cash").GetDouble(),
-            Equity = json.GetProperty("portfolio_value").GetDouble()
+            Cash = ParseDouble(json.GetProperty("cash")),
+            Equity = ParseDouble(json.GetProperty("portfolio_value"))
         };
+    }
+
+    private static double ParseDouble(JsonElement element)
+    {
+        if (element.ValueKind == JsonValueKind.String)
+            return double.Parse(element.GetString() ?? "0");
+        return element.GetDouble();
     }
 
     public async Task<OrderResult> PlaceOrderAsync(string symbol, int quantity, OrderSide side, OrderType type, double? limitPrice = null)
@@ -63,7 +70,7 @@ public class AlpacaBrokerService : IBrokerService
         {
             Id = orderJson.GetProperty("id").GetString() ?? "",
             Symbol = orderJson.GetProperty("symbol").GetString() ?? "",
-            Quantity = orderJson.GetProperty("qty").GetInt32(),
+            Quantity = ParseInt(orderJson.GetProperty("qty")),
             Side = Enum.Parse<OrderSide>(orderJson.GetProperty("side").GetString() ?? "Buy", ignoreCase: true),
             Type = Enum.Parse<OrderType>(orderJson.GetProperty("type").GetString() ?? "market", ignoreCase: true),
             Status = ParseOrderStatus(orderJson.GetProperty("status").GetString() ?? ""),
@@ -71,11 +78,11 @@ public class AlpacaBrokerService : IBrokerService
         };
 
         if (orderJson.TryGetProperty("limit_price", out var limitPriceEl) && limitPriceEl.ValueKind != JsonValueKind.Null)
-            order.LimitPrice = limitPriceEl.GetDouble();
+            order.LimitPrice = ParseDouble(limitPriceEl);
 
         if (orderJson.TryGetProperty("filled_avg_price", out var fillPriceEl) && fillPriceEl.ValueKind != JsonValueKind.Null)
         {
-            order.FillPrice = fillPriceEl.GetDouble();
+            order.FillPrice = ParseDouble(fillPriceEl);
             order.FilledAt = DateTime.Now;
         }
 
@@ -131,7 +138,7 @@ public class AlpacaBrokerService : IBrokerService
         {
             Id = item.GetProperty("id").GetString() ?? "",
             Symbol = item.GetProperty("symbol").GetString() ?? "",
-            Quantity = item.GetProperty("qty").GetInt32(),
+            Quantity = ParseInt(item.GetProperty("qty")),
             Side = Enum.Parse<OrderSide>(item.GetProperty("side").GetString() ?? "Buy", ignoreCase: true),
             Type = Enum.Parse<OrderType>(item.GetProperty("type").GetString() ?? "market", ignoreCase: true),
             Status = ParseOrderStatus(item.GetProperty("status").GetString() ?? ""),
@@ -139,11 +146,11 @@ public class AlpacaBrokerService : IBrokerService
         };
 
         if (item.TryGetProperty("limit_price", out var limitEl) && limitEl.ValueKind != JsonValueKind.Null)
-            order.LimitPrice = limitEl.GetDouble();
+            order.LimitPrice = ParseDouble(limitEl);
 
         if (item.TryGetProperty("filled_avg_price", out var fillEl) && fillEl.ValueKind != JsonValueKind.Null)
         {
-            order.FillPrice = fillEl.GetDouble();
+            order.FillPrice = ParseDouble(fillEl);
             order.FilledAt = DateTime.Now;
         }
 
@@ -151,6 +158,13 @@ public class AlpacaBrokerService : IBrokerService
             order.FilledAt = DateTime.Parse(filledAtEl.GetString() ?? "");
 
         return order;
+    }
+
+    private static int ParseInt(JsonElement element)
+    {
+        if (element.ValueKind == JsonValueKind.String)
+            return int.Parse(element.GetString() ?? "0");
+        return element.GetInt32();
     }
 
     private static OrderStatus ParseOrderStatus(string status) => status.ToLower() switch

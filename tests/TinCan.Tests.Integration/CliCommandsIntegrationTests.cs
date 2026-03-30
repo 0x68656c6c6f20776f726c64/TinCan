@@ -375,6 +375,110 @@ public class CliCommandsIntegrationTests
         StringAssert.Contains(result.Output + result.Error, "not found");
     }
 
+    // ============ Buy/Sell Command Tests ============
+
+    [TestMethod]
+    public async Task BuyCommand_WithValidSymbol_PlacesBuyOrder()
+    {
+        if (string.IsNullOrEmpty(_apiKey))
+        {
+            Assert.Inconclusive("FINNHUB_API_KEY not configured");
+            return;
+        }
+
+        // Get settings path for Alpaca
+        var settingsPath = Path.Combine(GetTinCanDir(), "stock_bot", "settings.json");
+        if (!File.Exists(settingsPath))
+        {
+            Assert.Inconclusive("stock_bot/settings.json not found");
+            return;
+        }
+
+        var result = await RunCliAsyncWithSettings("buy MSFT 1", settingsPath);
+
+        Assert.AreEqual(0, result.ExitCode, $"Buy failed: {result.Output} {result.Error}");
+        StringAssert.Contains(result.Output, "Order placed successfully");
+        StringAssert.Contains(result.Output, "Buy");
+    }
+
+    [TestMethod]
+    public async Task SellCommand_WithValidSymbol_PlacesSellOrder()
+    {
+        if (string.IsNullOrEmpty(_apiKey))
+        {
+            Assert.Inconclusive("FINNHUB_API_KEY not configured");
+            return;
+        }
+
+        var settingsPath = Path.Combine(GetTinCanDir(), "stock_bot", "settings.json");
+        if (!File.Exists(settingsPath))
+        {
+            Assert.Inconclusive("stock_bot/settings.json not found");
+            return;
+        }
+
+        var result = await RunCliAsyncWithSettings("sell MSFT 1", settingsPath);
+
+        Assert.AreEqual(0, result.ExitCode, $"Sell failed: {result.Output} {result.Error}");
+        StringAssert.Contains(result.Output, "Order placed successfully");
+        StringAssert.Contains(result.Output, "Sell");
+    }
+
+    [TestMethod]
+    public async Task BuyCommand_WithMissingSymbol_ReturnsError()
+    {
+        var result = await RunCliAsync("buy");
+
+        Assert.AreNotEqual(0, result.ExitCode);
+        StringAssert.Contains(result.Output + result.Error, "Symbol is required");
+    }
+
+    [TestMethod]
+    public async Task SellCommand_WithMissingSymbol_ReturnsError()
+    {
+        var result = await RunCliAsync("sell");
+
+        Assert.AreNotEqual(0, result.ExitCode);
+        StringAssert.Contains(result.Output + result.Error, "Symbol is required");
+    }
+
+    private async Task<ProcessResult> RunCliAsyncWithSettings(string args, string settingsPath, int timeoutSeconds = 30)
+    {
+        var psi = new ProcessStartInfo
+        {
+            FileName = "dotnet",
+            Arguments = $"run --project \"{GetTinCanDir()}\" -- {args} --settings \"{settingsPath}\"",
+            WorkingDirectory = GetTinCanDir(),
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            UseShellExecute = false,
+            CreateNoWindow = true
+        };
+
+        if (!string.IsNullOrEmpty(_apiKey))
+            psi.EnvironmentVariables["FINNHUB_API_KEY"] = _apiKey;
+
+        _runningProcess = new Process { StartInfo = psi };
+        _runningProcess.Start();
+
+        var output = await _runningProcess.StandardOutput.ReadToEndAsync();
+        var error = await _runningProcess.StandardError.ReadToEndAsync();
+
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(timeoutSeconds));
+        await _runningProcess.WaitForExitAsync(cts.Token);
+
+        var exitCode = _runningProcess.ExitCode;
+        _runningProcess.Dispose();
+        _runningProcess = null;
+
+        return new ProcessResult
+        {
+            ExitCode = exitCode,
+            Output = output,
+            Error = error
+        };
+    }
+
     // ============ Positions Command Tests ============
 
     [TestMethod]

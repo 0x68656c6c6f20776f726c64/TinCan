@@ -1,0 +1,16 @@
+{
+  "providers": {
+    "data": "finnhub",
+    "broker": "paper"
+  },
+  "broker": {
+    "paper": {
+      "initialCash": 10000.00
+    },
+    "alpaca": {
+      "apiKey": "",
+      "secretKey": "",
+      "baseUrl": "https://paper-api.alpaca.markets"
+    }
+  }
+}

@@ -10,10 +10,3 @@ public interface IBrokerService
     Task<List<Order>> GetOrderHistoryAsync(string symbol, int limit = 50);
     Task<bool> CancelOrderAsync(string orderId);
 }
-
-public class OrderResult
-{
-    public bool Success { get; set; }
-    public string? ErrorMessage { get; set; }
-    public Order? Order { get; set; }
-}

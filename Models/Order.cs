@@ -26,3 +26,10 @@ public class ExecutionResult
     public string? ErrorMessage { get; set; }
     public Order? Order { get; set; }
 }
+
+public class OrderResult
+{
+    public bool Success { get; set; }
+    public string? ErrorMessage { get; set; }
+    public Order? Order { get; set; }
+}

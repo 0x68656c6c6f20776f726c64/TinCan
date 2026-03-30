@@ -132,6 +132,54 @@ public class AlpacaBrokerService : IBrokerService
         return response.IsSuccessStatusCode;
     }
 
+    public async Task<List<Position>> GetPositionsAsync(string? symbol = null)
+    {
+        string url;
+        if (string.IsNullOrEmpty(symbol))
+            url = "/v2/positions";
+        else
+            url = $"/v2/positions/{symbol}";
+
+        var response = await _httpClient.GetAsync(url);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            // No positions found
+            if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                return new List<Position>();
+            response.EnsureSuccessStatusCode();
+        }
+
+        var json = await response.Content.ReadFromJsonAsync<JsonElement>();
+        var positions = new List<Position>();
+
+        if (json.ValueKind == JsonValueKind.Array)
+        {
+            foreach (var item in json.EnumerateArray())
+            {
+                positions.Add(ParsePosition(item));
+            }
+        }
+        else
+        {
+            positions.Add(ParsePosition(json));
+        }
+
+        return positions;
+    }
+
+    private static Position ParsePosition(JsonElement item)
+    {
+        return new Position
+        {
+            Symbol = item.GetProperty("symbol").GetString() ?? "",
+            Quantity = ParseInt(item.GetProperty("qty")),
+            AvgCost = ParseDouble(item.GetProperty("avg_entry_price")),
+            MarketValue = ParseDouble(item.GetProperty("market_value")),
+            UnrealizedPnL = ParseDouble(item.GetProperty("unrealized_pl"))
+        };
+    }
+
     private static Order ParseOrder(JsonElement item)
     {
         var order = new Order

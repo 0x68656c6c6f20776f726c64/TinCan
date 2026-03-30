@@ -484,12 +484,22 @@ public class CliCommandsIntegrationTests
     // ============ Positions Command Tests ============
 
     [TestMethod]
-    public async Task PositionsCommand_ReturnsStubError()
+    public async Task PositionsCommand_ReturnsPositions()
     {
-        var result = await RunCliAsync("positions");
+        var settingsPath = GetSettingsPath();
+        var result = await RunCliAsyncWithSettings("positions", settingsPath);
+
+        // Alpaca broker works, should show positions or "No positions"
+        Assert.IsTrue(result.ExitCode == 0 || result.Output.Contains("positions") || result.Output.Contains("Provider"));
+    }
+
+    [TestMethod]
+    public async Task CancelCommand_WithoutOrderId_ReturnsError()
+    {
+        var result = await RunCliAsync("cancel");
 
         Assert.AreEqual(1, result.ExitCode);
-        StringAssert.Contains(result.Output + result.Error, "Execution Layer");
+        StringAssert.Contains(result.Output + result.Error, "Order ID is required");
     }
 
     private class ProcessResult

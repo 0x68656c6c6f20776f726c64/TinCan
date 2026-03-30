@@ -14,6 +14,10 @@ public static class BrokerFactory
         return provider.ToLowerInvariant() switch
         {
             "paper" => new PaperBrokerService(marketData, projectDir, brokerConfig.Paper?.InitialCash ?? 10000.00),
+            "alpaca" => new AlpacaBrokerService(
+                brokerConfig.Alpaca?.ApiKey ?? "",
+                brokerConfig.Alpaca?.SecretKey ?? "",
+                brokerConfig.Alpaca?.BaseUrl ?? "https://paper-api.alpaca.markets"),
             _ => throw new InvalidOperationException($"Unknown broker provider: {provider}")
         };
     }

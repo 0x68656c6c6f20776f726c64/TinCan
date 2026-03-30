@@ -17,6 +17,7 @@ app.Command("order", OrderCommand.Execute);
 app.Command("buy", BuyCommand.Execute);
 app.Command("sell", SellCommand.Execute);
 app.Command("positions", PositionsCommand.Execute);
+app.Command("balance", BalanceCommand.Execute);
 app.Command("cancel", CancelCommand.Execute);
 
 app.OnExecute(() =>

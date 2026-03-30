@@ -330,30 +330,31 @@ public class CliCommandsIntegrationTests
 
     // ============ Orders Command Tests ============
 
-    [TestMethod]
-    public async Task OrdersCommand_WithDefaultProvider_ReturnsNoOrders()
+    private string GetSettingsPath()
     {
-        var result = await RunCliAsync("orders");
-
-        // Paper broker works, returns 0 with "No orders found"
-        Assert.IsTrue(result.ExitCode == 0 || result.Output.Contains("No orders") || result.Output.Contains("Provider"));
+        var settingsPath = Path.Combine(GetTinCanDir(), "stock_bot", "settings.json");
+        if (!File.Exists(settingsPath))
+            throw new InvalidOperationException("stock_bot/settings.json not found");
+        return settingsPath;
     }
 
     [TestMethod]
-    public async Task OrdersCommand_WithPaperProvider_ReturnsNoOrders()
+    public async Task OrdersCommand_WithAlpacaProvider_ReturnsNoOrders()
     {
-        var result = await RunCliAsync("orders --provider paper");
+        var settingsPath = GetSettingsPath();
+        var result = await RunCliAsyncWithSettings("orders", settingsPath);
 
-        // Paper broker works, returns 0 with "No orders found"
+        // Alpaca broker works, returns 0 with "No orders found"
         Assert.IsTrue(result.ExitCode == 0 || result.Output.Contains("No orders") || result.Output.Contains("Provider"));
     }
 
     [TestMethod]
     public async Task OrdersCommand_WithOpenFlag_ReturnsNoOrders()
     {
-        var result = await RunCliAsync("orders --open");
+        var settingsPath = GetSettingsPath();
+        var result = await RunCliAsyncWithSettings("orders --open", settingsPath);
 
-        // Paper broker works with --open flag
+        // Alpaca broker works with --open flag
         Assert.IsTrue(result.ExitCode == 0 || result.Output.Contains("No orders") || result.Output.Contains("Provider"));
     }
 
@@ -369,7 +370,8 @@ public class CliCommandsIntegrationTests
     [TestMethod]
     public async Task OrderCommand_WithNonExistentOrderId_ReturnsError()
     {
-        var result = await RunCliAsync("order non-existent-id");
+        var settingsPath = GetSettingsPath();
+        var result = await RunCliAsyncWithSettings("order non-existent-id", settingsPath);
 
         Assert.AreEqual(1, result.ExitCode);
         StringAssert.Contains(result.Output + result.Error, "not found");

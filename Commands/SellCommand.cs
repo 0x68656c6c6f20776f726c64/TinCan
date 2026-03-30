@@ -34,23 +34,11 @@ public static class SellCommand
             }
 
             var settings = SettingsLoader.Load(settingsOpt.Value());
-            var projectDir = Directory.GetCurrentDirectory();
-
-            IMarketDataProviderService marketData;
-            try
-            {
-                marketData = MarketDataProviderFactory.Create(settings);
-            }
-            catch (InvalidOperationException ex)
-            {
-                Console.WriteLine($"[ERROR] {ex.Message}");
-                return 1;
-            }
 
             IBrokerService broker;
             try
             {
-                broker = BrokerFactory.Create(settings, marketData, projectDir);
+                broker = BrokerFactory.Create(settings);
             }
             catch (InvalidOperationException ex)
             {
@@ -58,7 +46,7 @@ public static class SellCommand
                 return 1;
             }
 
-            var provider = settings.Providers?.Broker ?? "paper";
+            var provider = settings.Providers?.Broker ?? "alpaca";
             Console.WriteLine($"[INFO] Provider: {provider}");
 
             try

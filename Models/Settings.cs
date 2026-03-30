@@ -28,17 +28,8 @@ public class Providers
 
 public class BrokerConfig
 {
-    [JsonProperty("paper")]
-    public PaperConfig? Paper { get; set; }
-    
     [JsonProperty("alpaca")]
     public AlpacaConfig? Alpaca { get; set; }
-}
-
-public class PaperConfig
-{
-    [JsonProperty("initialCash")]
-    public double InitialCash { get; set; } = 10000.00;
 }
 
 public class AlpacaConfig

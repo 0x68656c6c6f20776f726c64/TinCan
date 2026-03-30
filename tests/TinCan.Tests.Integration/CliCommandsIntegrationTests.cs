@@ -330,176 +330,33 @@ public class CliCommandsIntegrationTests
 
     // ============ Orders Command Tests ============
 
-    private string GetSettingsPath()
-    {
-        var settingsPath = Path.Combine(GetTinCanDir(), "stock_bot", "settings.json");
-        if (!File.Exists(settingsPath))
-            throw new InvalidOperationException("stock_bot/settings.json not found");
-        return settingsPath;
-    }
-
     [TestMethod]
-    public async Task OrdersCommand_WithAlpacaProvider_ReturnsNoOrders()
+    public async Task OrdersCommand_DefaultProvider_ReturnsStubError()
     {
-        var settingsPath = GetSettingsPath();
-        var result = await RunCliAsyncWithSettings("orders", settingsPath);
-
-        // Alpaca broker works, returns 0 with "No orders found"
-        Assert.IsTrue(result.ExitCode == 0 || result.Output.Contains("No orders") || result.Output.Contains("Provider"));
-    }
-
-    [TestMethod]
-    public async Task OrdersCommand_WithOpenFlag_ReturnsNoOrders()
-    {
-        var settingsPath = GetSettingsPath();
-        var result = await RunCliAsyncWithSettings("orders --open", settingsPath);
-
-        // Alpaca broker works with --open flag
-        Assert.IsTrue(result.ExitCode == 0 || result.Output.Contains("No orders") || result.Output.Contains("Provider"));
-    }
-
-    [TestMethod]
-    public async Task OrderCommand_WithoutOrderId_ReturnsError()
-    {
-        var result = await RunCliAsync("order");
+        var result = await RunCliAsync("orders");
 
         Assert.AreEqual(1, result.ExitCode);
-        StringAssert.Contains(result.Output + result.Error, "Order ID is required");
+        StringAssert.Contains(result.Output + result.Error, "Execution Layer");
     }
 
     [TestMethod]
-    public async Task OrderCommand_WithNonExistentOrderId_ReturnsError()
+    public async Task OrdersCommand_WithPaperProvider_ReturnsStubError()
     {
-        var settingsPath = GetSettingsPath();
-        var result = await RunCliAsyncWithSettings("order non-existent-id", settingsPath);
+        var result = await RunCliAsync("orders --provider paper");
 
         Assert.AreEqual(1, result.ExitCode);
-        StringAssert.Contains(result.Output + result.Error, "not found");
-    }
-
-    // ============ Buy/Sell Command Tests ============
-
-    [TestMethod]
-    public async Task BuyCommand_WithValidSymbol_PlacesBuyOrder()
-    {
-        if (string.IsNullOrEmpty(_apiKey))
-        {
-            Assert.Inconclusive("FINNHUB_API_KEY not configured");
-            return;
-        }
-
-        // Get settings path for Alpaca
-        var settingsPath = Path.Combine(GetTinCanDir(), "stock_bot", "settings.json");
-        if (!File.Exists(settingsPath))
-        {
-            Assert.Inconclusive("stock_bot/settings.json not found");
-            return;
-        }
-
-        var result = await RunCliAsyncWithSettings("buy MSFT 1", settingsPath);
-
-        Assert.AreEqual(0, result.ExitCode, $"Buy failed: {result.Output} {result.Error}");
-        StringAssert.Contains(result.Output, "Order placed successfully");
-        StringAssert.Contains(result.Output, "Buy");
-    }
-
-    [TestMethod]
-    public async Task SellCommand_WithValidSymbol_PlacesSellOrder()
-    {
-        if (string.IsNullOrEmpty(_apiKey))
-        {
-            Assert.Inconclusive("FINNHUB_API_KEY not configured");
-            return;
-        }
-
-        var settingsPath = Path.Combine(GetTinCanDir(), "stock_bot", "settings.json");
-        if (!File.Exists(settingsPath))
-        {
-            Assert.Inconclusive("stock_bot/settings.json not found");
-            return;
-        }
-
-        var result = await RunCliAsyncWithSettings("sell MSFT 1", settingsPath);
-
-        Assert.AreEqual(0, result.ExitCode, $"Sell failed: {result.Output} {result.Error}");
-        StringAssert.Contains(result.Output, "Order placed successfully");
-        StringAssert.Contains(result.Output, "Sell");
-    }
-
-    [TestMethod]
-    public async Task BuyCommand_WithMissingSymbol_ReturnsError()
-    {
-        var result = await RunCliAsync("buy");
-
-        Assert.AreNotEqual(0, result.ExitCode);
-        StringAssert.Contains(result.Output + result.Error, "Symbol is required");
-    }
-
-    [TestMethod]
-    public async Task SellCommand_WithMissingSymbol_ReturnsError()
-    {
-        var result = await RunCliAsync("sell");
-
-        Assert.AreNotEqual(0, result.ExitCode);
-        StringAssert.Contains(result.Output + result.Error, "Symbol is required");
-    }
-
-    private async Task<ProcessResult> RunCliAsyncWithSettings(string args, string settingsPath, int timeoutSeconds = 30)
-    {
-        var psi = new ProcessStartInfo
-        {
-            FileName = "dotnet",
-            Arguments = $"run --project \"{GetTinCanDir()}\" -- {args} --settings \"{settingsPath}\"",
-            WorkingDirectory = GetTinCanDir(),
-            RedirectStandardOutput = true,
-            RedirectStandardError = true,
-            UseShellExecute = false,
-            CreateNoWindow = true
-        };
-
-        if (!string.IsNullOrEmpty(_apiKey))
-            psi.EnvironmentVariables["FINNHUB_API_KEY"] = _apiKey;
-
-        _runningProcess = new Process { StartInfo = psi };
-        _runningProcess.Start();
-
-        var output = await _runningProcess.StandardOutput.ReadToEndAsync();
-        var error = await _runningProcess.StandardError.ReadToEndAsync();
-
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(timeoutSeconds));
-        await _runningProcess.WaitForExitAsync(cts.Token);
-
-        var exitCode = _runningProcess.ExitCode;
-        _runningProcess.Dispose();
-        _runningProcess = null;
-
-        return new ProcessResult
-        {
-            ExitCode = exitCode,
-            Output = output,
-            Error = error
-        };
+        StringAssert.Contains(result.Output + result.Error, "Execution Layer");
     }
 
     // ============ Positions Command Tests ============
 
     [TestMethod]
-    public async Task PositionsCommand_ReturnsPositions()
+    public async Task PositionsCommand_ReturnsStubError()
     {
-        var settingsPath = GetSettingsPath();
-        var result = await RunCliAsyncWithSettings("positions", settingsPath);
-
-        // Alpaca broker works, should show positions or "No positions"
-        Assert.IsTrue(result.ExitCode == 0 || result.Output.Contains("positions") || result.Output.Contains("Provider"));
-    }
-
-    [TestMethod]
-    public async Task CancelCommand_WithoutOrderId_ReturnsError()
-    {
-        var result = await RunCliAsync("cancel");
+        var result = await RunCliAsync("positions");
 
         Assert.AreEqual(1, result.ExitCode);
-        StringAssert.Contains(result.Output + result.Error, "Order ID is required");
+        StringAssert.Contains(result.Output + result.Error, "Execution Layer");
     }
 
     private class ProcessResult

@@ -87,17 +87,50 @@ Loads and displays the current `MarketContext` for a symbol (result file → str
 tincan context U --json
 ```
 
-### `tincan orders [--open] [--symbol <symbol>] [--provider <provider>]`
-Lists orders from the broker. **Stub** — requires Story #13 (Execution Layer).
+### `tincan balance [--settings <path>]`
+Gets account balance from the broker (cash and equity).
+```bash
+tincan balance --settings stock_bot/settings.json
+```
 
-### `tincan order <orderId> [--provider <provider>]`
-Gets details of a specific order. **Stub** — requires Story #13.
+### `tincan buy <symbol> <quantity> [--limit <price>] [--settings <path>]`
+Places a buy order.
+```bash
+tincan buy U 10 --settings stock_bot/settings.json
+tincan buy AAPL 5 --limit 150.00 --settings stock_bot/settings.json
+```
 
-### `tincan positions [--provider <provider>]`
-Views current positions from the broker. **Stub** — requires Story #13.
+### `tincan sell <symbol> <quantity> [--limit <price>] [--settings <path>]`
+Places a sell order.
+```bash
+tincan sell U 5 --settings stock_bot/settings.json
+tincan sell AAPL 3 --limit 160.00 --settings stock_bot/settings.json
+```
 
-### `tincan cancel <orderId> [--provider <provider>]`
-Cancels an open order. **Stub** — requires Story #13.
+### `tincan orders [--open] [--symbol <symbol>] [--settings <path>]`
+Lists orders from the broker.
+```bash
+tincan orders --settings stock_bot/settings.json
+tincan orders --open --settings stock_bot/settings.json
+```
+
+### `tincan order <orderId> [--settings <path>]`
+Gets details of a specific order.
+```bash
+tincan order abc123 --settings stock_bot/settings.json
+```
+
+### `tincan positions [--settings <path>]`
+Views current positions from the broker.
+```bash
+tincan positions --settings stock_bot/settings.json
+```
+
+### `tincan cancel <orderId> [--settings <path>]`
+Cancels an open order.
+```bash
+tincan cancel abc123 --settings stock_bot/settings.json
+```
 
 ---
 
@@ -225,7 +258,8 @@ TinCan/
 - [x] OpenClaw-powered strategy
 - [x] CLI app with command dispatch
 - [x] LoadMarketContext (Story #9)
-- [ ] Execution Layer - Broker Abstraction + Paper Trading (Story #13)
+- [x] Execution Layer - Broker Abstraction + Paper Trading (Story #13)
+- [x] NuGet package configuration (Story #15)
 - [ ] Risk management module
 - [ ] Backtesting framework
 

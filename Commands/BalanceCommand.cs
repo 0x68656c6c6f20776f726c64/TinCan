@@ -5,23 +5,15 @@ using TinCan.Interfaces;
 
 namespace TinCan.Commands;
 
-public static class CancelCommand
+public static class BalanceCommand
 {
     public static void Execute(CommandLineApplication app)
     {
-        var orderIdArg = app.Argument<string>("orderId", "Order ID to cancel");
         var settingsOpt = app.Option<string>("--settings", "Path to settings.json", CommandOptionType.SingleValue);
         app.HelpOption("-?|-h|--help");
 
         app.OnExecute(() =>
         {
-            var orderId = orderIdArg.Value;
-            if (string.IsNullOrWhiteSpace(orderId))
-            {
-                Console.WriteLine("[ERROR] Order ID is required.");
-                return 1;
-            }
-
             var settings = SettingsLoader.Load(settingsOpt.Value());
 
             IBrokerService broker;
@@ -40,20 +32,13 @@ public static class CancelCommand
 
             try
             {
-                Console.WriteLine($"[INFO] Cancelling order: {orderId}");
+                var balance = broker.GetBalanceAsync().GetAwaiter().GetResult();
 
-                var success = broker.CancelOrderAsync(orderId).GetAwaiter().GetResult();
+                Console.WriteLine("\nAccount Balance:");
+                Console.WriteLine($"  Cash:          ${balance.Cash:F2}");
+                Console.WriteLine($"  Equity:        ${balance.Equity:F2}");
 
-                if (success)
-                {
-                    Console.WriteLine($"[INFO] Order {orderId} cancelled successfully.");
-                    return 0;
-                }
-                else
-                {
-                    Console.WriteLine($"[ERROR] Failed to cancel order {orderId}. Order may have already been filled or cancelled.");
-                    return 1;
-                }
+                return 0;
             }
             catch (Exception ex)
             {

@@ -63,7 +63,7 @@ dotnet tool uninstall -g TinCan-CLI
 ## 🛠️ CLI Commands
 
 ### `tincan fetch [--interval <minutes>] [--settings <path>]`
-Runs the scheduler loop — fetches prices on the configured interval. Same as the original `dotnet run` behavior.
+Runs the scheduler loop — fetches prices on the configured interval.
 ```bash
 tincan fetch --interval 5
 ```
@@ -82,15 +82,22 @@ tincan backfill U --from 2024-01-01 --to 2024-12-31
 ```
 
 ### `tincan context <symbol> [--json]`
-Loads and displays the current `MarketContext` for a symbol (result file → structured data).
+Loads and displays the current `MarketContext` for a symbol.
 ```bash
 tincan context U --json
 ```
 
-### `tincan balance [--settings <path>]`
-Gets account balance from the broker (cash and equity).
+### `tincan orders [--open] [--symbol <symbol>] [--provider <provider>] [--settings <path>]`
+Lists orders from the broker.
 ```bash
-tincan balance --settings stock_bot/settings.json
+tincan orders --settings stock_bot/settings.json
+tincan orders --open --settings stock_bot/settings.json
+```
+
+### `tincan order <orderId> [--provider <provider>] [--settings <path>]`
+Gets details of a specific order.
+```bash
+tincan order abc123 --settings stock_bot/settings.json
 ```
 
 ### `tincan buy <symbol> <quantity> [--limit <price>] [--settings <path>]`
@@ -107,29 +114,52 @@ tincan sell U 5 --settings stock_bot/settings.json
 tincan sell AAPL 3 --limit 160.00 --settings stock_bot/settings.json
 ```
 
-### `tincan orders [--open] [--symbol <symbol>] [--settings <path>]`
-Lists orders from the broker.
-```bash
-tincan orders --settings stock_bot/settings.json
-tincan orders --open --settings stock_bot/settings.json
-```
-
-### `tincan order <orderId> [--settings <path>]`
-Gets details of a specific order.
-```bash
-tincan order abc123 --settings stock_bot/settings.json
-```
-
-### `tincan positions [--settings <path>]`
+### `tincan positions [--provider <provider>] [--settings <path>]`
 Views current positions from the broker.
 ```bash
 tincan positions --settings stock_bot/settings.json
 ```
 
-### `tincan cancel <orderId> [--settings <path>]`
+### `tincan cancel <orderId> [--provider <provider>] [--settings <path>]`
 Cancels an open order.
 ```bash
 tincan cancel abc123 --settings stock_bot/settings.json
+```
+
+---
+
+## 🔧 Broker Configuration
+
+TinCan supports multiple broker providers:
+
+### Paper Trading (default)
+```json
+{
+  "providers": {
+    "broker": "paper"
+  },
+  "broker": {
+    "paper": {
+      "initialCash": 10000.00
+    }
+  }
+}
+```
+
+### Alpaca
+```json
+{
+  "providers": {
+    "broker": "alpaca"
+  },
+  "broker": {
+    "alpaca": {
+      "apiKey": "PK...",
+      "secretKey": "Sec...",
+      "baseUrl": "https://paper-api.alpaca.markets"
+    }
+  }
+}
 ```
 
 ---
@@ -180,8 +210,44 @@ dotnet tool install -g --add-source /tmp/tincan-packages/ .
 
 * [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
 * API keys:
-  * [Finnhub](https://finnhub.io) — free tier available
-  * [Alpaca](https://alpaca.markets) — for broker integration
+  * [Finnhub](https://finnhub.io) — free tier available for market data
+  * [Alpaca](https://alpaca.markets) — optional, for paper/live trading
+
+### 2. Clone and build
+
+```bash
+git clone https://github.com/0x68656c6c6f20776f726c64/TinCan-CLI.git
+cd TinCan-CLI
+dotnet restore
+dotnet build
+```
+
+### 3. Configure
+
+```bash
+cp settings.example.json settings.json
+# Edit settings.json with your Finnhub API key
+```
+
+For trading, also add Alpaca API keys to `stock_bot/settings.json`:
+```bash
+cp stock_bot/settings.example.json stock_bot/settings.json
+# Edit stock_bot/settings.json with your broker settings
+```
+
+### 4. Run
+
+```bash
+# Run as CLI
+dotnet run -- fetch
+
+# Or install as global tool
+dotnet pack -c Release
+dotnet tool install -g --add-source /tmp/tincan-packages/ .
+
+# Then use globally
+tincan fetch
+```
 
 ---
 
@@ -207,38 +273,42 @@ TinCan/
 │   ├── ContextCommand.cs
 │   ├── FetchCommand.cs
 │   ├── OrderCommand.cs
-│   ├── OrdersCommand.cs
+│   ├── BuyCommand.cs
+│   ├── SellCommand.cs
 │   ├── PositionsCommand.cs
 │   ├── PriceCommand.cs
 │   └── SellCommand.cs
 ├── Factory/
 │   └── BrokerFactory.cs       # Broker service factory
 ├── Infrastructure/
-│   ├── MarketDataProviderFactory.cs  # Market data provider factory
-│   ├── ProviderResolver.cs     # Provider resolution (flag > env > config)
-│   └── SettingsLoader.cs      # Shared settings loading
-├── Interfaces/
-│   ├── IBrokerService.cs             # Broker abstraction
-│   ├── IMarketDataProviderService.cs  # Market data abstraction
-│   └── IStrategy.cs                   # Strategy interface
+│   ├── SettingsLoader.cs      # Shared settings loading
+│   ├── ProviderResolver.cs    # Provider resolution (flag > env > config)
+│   └── MarketDataProviderFactory.cs  # Market data factory
+├── Factory/
+│   └── BrokerFactory.cs       # Broker service factory
 ├── Models/
-│   ├── MarketContext.cs       # Market data context for strategies
-│   ├── OpenClawResponse.cs    # OpenClaw agent response model
-│   ├── Order.cs               # Order, BrokerBalance, OrderResult
-│   ├── OrderEnums.cs          # OrderSide, OrderType, OrderStatus
-│   ├── Position.cs            # Position (symbol, qty, avg cost, p&l)
 │   ├── Settings.cs            # Configuration model
-│   ├── Signal.cs              # Trading signal (Buy/Sell/Hold)
 │   ├── StockLookup.cs         # Stock tracking config
-│   └── StockPrice.cs          # Price data model
+│   ├── StockPrice.cs          # Price data model
+│   ├── Signal.cs              # Trading signal (Buy/Sell/Hold)
+│   ├── MarketContext.cs       # Market data context for strategies
+│   ├── Order.cs               # Order, BrokerBalance, ExecutionResult
+│   └── OrderEnums.cs          # OrderSide, OrderType, OrderStatus
+├── Interfaces/
+│   ├── IMarketDataProviderService.cs   # Market data abstraction
+│   ├── IBrokerService.cs             # Broker abstraction
+│   └── IStrategy.cs                  # Strategy interface
 ├── Services/
-│   ├── AlpacaBrokerService.cs # Alpaca API integration
-│   ├── FinnhubService.cs      # Finnhub API integration
+│   ├── FinnhubService.cs       # Finnhub API integration
+│   ├── StockFileService.cs     # File-based stock data (read/write)
 │   ├── OpenClawService.cs     # OpenClaw agent CLI integration
-│   └── StockFileService.cs    # File-based stock data (read/write)
+│   ├── PaperBrokerService.cs   # Paper trading simulation
+│   └── AlpacaBrokerService.cs # Alpaca API integration
 ├── Strategies/
-│   ├── OpenClawStrategy.cs    # OpenClaw agent-driven strategy
-│   └── StrategyBase.cs        # Abstract base class
+│   ├── StrategyBase.cs                # Abstract base class
+│   ├── RangeTradingStrategy.cs         # Range trading strategy
+│   ├── OpenClawStrategy.cs            # OpenClaw agent-driven strategy
+│   └── OpenClawSimpleStrategy.cs       # Simple OpenClaw child strategy
 ├── tests/
 │   ├── TinCan.Tests.Unit/
 │   └── TinCan.Tests.Integration/
@@ -259,7 +329,6 @@ TinCan/
 - [x] CLI app with command dispatch
 - [x] LoadMarketContext (Story #9)
 - [x] Execution Layer - Broker Abstraction + Paper Trading (Story #13)
-- [x] NuGet package configuration (Story #15)
 - [ ] Risk management module
 - [ ] Backtesting framework
 

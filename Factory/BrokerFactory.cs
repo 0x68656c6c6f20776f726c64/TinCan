@@ -1,4 +1,3 @@
-using TinCan.Interfaces;
 using TinCan.Models;
 using TinCan.Services;
 

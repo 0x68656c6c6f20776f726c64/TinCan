@@ -1,7 +1,7 @@
 using McMaster.Extensions.CommandLineUtils;
 using TinCan.Factory;
 using TinCan.Infrastructure;
-using TinCan.Interfaces;
+using TinCan.Models;
 
 namespace TinCan.Commands;
 

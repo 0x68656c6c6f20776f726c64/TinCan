@@ -1,7 +1,7 @@
 using McMaster.Extensions.CommandLineUtils;
 using TinCan.Factory;
 using TinCan.Infrastructure;
-using TinCan.Interfaces;
+using TinCan.Models;
 
 namespace TinCan.Commands;
 
@@ -32,7 +32,7 @@ public static class BalanceCommand
 
             try
             {
-                var balance = broker.GetBalanceAsync("").GetAwaiter().GetResult();
+                var balance = broker.GetBalanceAsync().GetAwaiter().GetResult();
 
                 Console.WriteLine("\nAccount Balance:");
                 Console.WriteLine($"  Cash:          ${balance.Cash:F2}");

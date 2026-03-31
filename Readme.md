@@ -132,15 +132,6 @@ Cancels an open order.
 tincan cancel abc123 --settings stock_bot/settings.json
 ```
 
-### `tincan order <orderId> [--provider <provider>]`
-Gets details of a specific order. **Stub** — requires Story #13.
-
-### `tincan positions [--provider <provider>]`
-Views current positions from the broker. **Stub** — requires Story #13.
-
-### `tincan cancel <orderId> [--provider <provider>]`
-Cancels an open order. **Stub** — requires Story #13.
-
 ---
 
 ## 🚀 Getting Started

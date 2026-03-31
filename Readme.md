@@ -165,38 +165,47 @@ dotnet test
 ```
 TinCan/
 ├── Program.cs                  # CLI entry point
-├── Scheduler.cs               # Main loop
-├── Commands/                  # CLI command handlers
-│   ├── FetchCommand.cs
-│   ├── PriceCommand.cs
+├── Scheduler.cs                # Main scheduling loop
+├── Commands/                   # CLI command handlers
 │   ├── BackfillCommand.cs
+│   ├── BalanceCommand.cs
+│   ├── BuyCommand.cs
+│   ├── CancelCommand.cs
 │   ├── ContextCommand.cs
-│   ├── OrdersCommand.cs
+│   ├── FetchCommand.cs
 │   ├── OrderCommand.cs
+│   ├── OrdersCommand.cs
 │   ├── PositionsCommand.cs
-│   └── CancelCommand.cs
+│   ├── PriceCommand.cs
+│   └── SellCommand.cs
+├── Factory/
+│   └── BrokerFactory.cs       # Broker service factory
 ├── Infrastructure/
-│   ├── SettingsLoader.cs      # Shared settings loading
-│   └── ProviderResolver.cs    # Provider resolution (flag > env > config)
-├── Models/
-│   ├── Settings.cs            # Configuration model
-│   ├── StockLookup.cs         # Stock tracking config
-│   ├── StockPrice.cs          # Price data model
-│   ├── Signal.cs              # Trading signal (Buy/Sell/Hold)
-│   ├── MarketContext.cs       # Market data context for strategies
-│   └── OpenClawResponse.cs    # OpenClaw agent response model
+│   ├── MarketDataProviderFactory.cs  # Market data provider factory
+│   ├── ProviderResolver.cs     # Provider resolution (flag > env > config)
+│   └── SettingsLoader.cs      # Shared settings loading
 ├── Interfaces/
-│   ├── IMarketDataProviderService.cs   # Market data abstraction
+│   ├── IBrokerService.cs             # Broker abstraction
+│   ├── IMarketDataProviderService.cs  # Market data abstraction
 │   └── IStrategy.cs                   # Strategy interface
-├── Strategies/
-│   ├── StrategyBase.cs                # Abstract base class
-│   ├── RangeTradingStrategy.cs         # Range trading strategy
-│   ├── OpenClawStrategy.cs            # OpenClaw agent-driven strategy
-│   └── OpenClawSimpleStrategy.cs       # Simple OpenClaw child strategy
+├── Models/
+│   ├── MarketContext.cs       # Market data context for strategies
+│   ├── OpenClawResponse.cs    # OpenClaw agent response model
+│   ├── Order.cs               # Order, BrokerBalance, OrderResult
+│   ├── OrderEnums.cs          # OrderSide, OrderType, OrderStatus
+│   ├── Position.cs            # Position (symbol, qty, avg cost, p&l)
+│   ├── Settings.cs            # Configuration model
+│   ├── Signal.cs              # Trading signal (Buy/Sell/Hold)
+│   ├── StockLookup.cs         # Stock tracking config
+│   └── StockPrice.cs          # Price data model
 ├── Services/
-│   ├── FinnhubService.cs       # Finnhub API integration
-│   ├── StockFileService.cs     # File-based stock data (read/write)
-│   └── OpenClawService.cs      # OpenClaw agent CLI integration
+│   ├── AlpacaBrokerService.cs # Alpaca API integration
+│   ├── FinnhubService.cs      # Finnhub API integration
+│   ├── OpenClawService.cs     # OpenClaw agent CLI integration
+│   └── StockFileService.cs    # File-based stock data (read/write)
+├── Strategies/
+│   ├── OpenClawStrategy.cs    # OpenClaw agent-driven strategy
+│   └── StrategyBase.cs        # Abstract base class
 ├── tests/
 │   ├── TinCan.Tests.Unit/
 │   └── TinCan.Tests.Integration/

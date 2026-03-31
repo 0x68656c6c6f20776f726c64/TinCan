@@ -163,7 +163,7 @@ dotnet test
 ## 📁 Project Structure
 
 ```
-TinCan/
+TinCanCLI/
 ├── Program.cs                  # CLI entry point
 ├── Scheduler.cs                # Main scheduling loop
 ├── Commands/                   # CLI command handlers

@@ -21,7 +21,7 @@ public class AlpacaBrokerService : IBrokerService
         _httpClient.DefaultRequestHeaders.Add("APCA-API-SECRET-KEY", secretKey);
     }
 
-    public async Task<BrokerBalance> GetBalanceAsync(string symbol)
+    public async Task<BrokerBalance> GetBalanceAsync()
     {
         var response = await _httpClient.GetAsync("/v2/account");
         response.EnsureSuccessStatusCode();

@@ -32,7 +32,7 @@ public static class BalanceCommand
 
             try
             {
-                var balance = broker.GetBalanceAsync("").GetAwaiter().GetResult();
+                var balance = broker.GetBalanceAsync().GetAwaiter().GetResult();
 
                 Console.WriteLine("\nAccount Balance:");
                 Console.WriteLine($"  Cash:          ${balance.Cash:F2}");

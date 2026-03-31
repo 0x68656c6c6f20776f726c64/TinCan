@@ -20,16 +20,42 @@ Market Data → Signal Engine → Sandbox Simulation → Execution Layer → Ris
 
 ## 📦 As a CLI Tool
 
-TinCan can be installed as a global CLI tool:
+### Install from NuGet
+
+TinCan-CLI is published as a NuGet tool package. You can install it directly from NuGet:
 
 ```bash
-dotnet tool install -g TinCan
+dotnet tool install -g TinCan-CLI
 ```
 
 Once installed, use the `tincan` command from anywhere:
 
 ```bash
 tincan --help
+```
+
+### Install from Local Package
+
+If you have the package locally:
+
+```bash
+dotnet tool install -g --add-source /tmp/tincan-packages/ TinCan-CLI
+```
+
+### Update Package
+
+To update to the latest version:
+
+```bash
+dotnet tool update -g TinCan-CLI
+```
+
+### Uninstall
+
+To uninstall:
+
+```bash
+dotnet tool uninstall -g TinCan-CLI
 ```
 
 ---
@@ -75,43 +101,54 @@ Cancels an open order. **Stub** — requires Story #13.
 
 ---
 
-## 🚀 Getting Started (Development)
+## 🚀 Getting Started
 
-### 1. Prerequisites
+### Option 1: Use Published NuGet Package (Recommended)
+
+```bash
+# Install the tool
+dotnet tool install -g TinCan-CLI
+
+# Configure your API keys
+cp settings.example.json settings.json
+# Edit settings.json with your Finnhub and Alpaca API keys
+
+# Run commands
+tincan fetch --interval 5
+tincan price AAPL
+```
+
+### Option 2: Development Mode
+
+If you want to contribute or modify TinCan:
+
+```bash
+# Clone the repository
+git clone https://github.com/0x68656c6c6f20776f726c64/TinCan-CLI.git
+cd TinCan-CLI
+
+# Restore and build
+dotnet restore
+dotnet build
+
+# Configure
+cp settings.example.json settings.json
+# Edit settings.json with your API keys
+
+# Run
+dotnet run -- fetch
+
+# Or pack and install locally
+dotnet pack -c Release
+dotnet tool install -g --add-source /tmp/tincan-packages/ .
+```
+
+### Prerequisites
 
 * [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
 * API keys:
   * [Finnhub](https://finnhub.io) — free tier available
-
-### 2. Clone and build
-
-```bash
-git clone https://github.com/0x68656c6c6f20776f726c64/TinCan-CLI.git
-cd TinCan-CLI
-dotnet restore
-dotnet build
-```
-
-### 3. Configure
-
-```bash
-cp stock_bot/settings.example.json stock_bot/settings.json
-# Edit stock_bot/settings.json with your Finnhub API key
-```
-
-### 4. Run
-
-```bash
-# Run as CLI
-dotnet run -- fetch
-
-# Or install as global tool
-dotnet pack -c Release
-dotnet tool install -g --add-source /tmp/tincan-packages/ .
-
-# Then use globally
-tincan fetch
-```
+  * [Alpaca](https://alpaca.markets) — for broker integration
 
 ---
 
@@ -128,38 +165,47 @@ dotnet test
 ```
 TinCan/
 ├── Program.cs                  # CLI entry point
-├── Scheduler.cs               # Main loop
-├── Commands/                  # CLI command handlers
-│   ├── FetchCommand.cs
-│   ├── PriceCommand.cs
+├── Scheduler.cs                # Main scheduling loop
+├── Commands/                   # CLI command handlers
 │   ├── BackfillCommand.cs
+│   ├── BalanceCommand.cs
+│   ├── BuyCommand.cs
+│   ├── CancelCommand.cs
 │   ├── ContextCommand.cs
-│   ├── OrdersCommand.cs
+│   ├── FetchCommand.cs
 │   ├── OrderCommand.cs
+│   ├── OrdersCommand.cs
 │   ├── PositionsCommand.cs
-│   └── CancelCommand.cs
+│   ├── PriceCommand.cs
+│   └── SellCommand.cs
+├── Factory/
+│   └── BrokerFactory.cs       # Broker service factory
 ├── Infrastructure/
-│   ├── SettingsLoader.cs      # Shared settings loading
-│   └── ProviderResolver.cs    # Provider resolution (flag > env > config)
-├── Models/
-│   ├── Settings.cs            # Configuration model
-│   ├── StockLookup.cs         # Stock tracking config
-│   ├── StockPrice.cs          # Price data model
-│   ├── Signal.cs              # Trading signal (Buy/Sell/Hold)
-│   ├── MarketContext.cs       # Market data context for strategies
-│   └── OpenClawResponse.cs    # OpenClaw agent response model
+│   ├── MarketDataProviderFactory.cs  # Market data provider factory
+│   ├── ProviderResolver.cs     # Provider resolution (flag > env > config)
+│   └── SettingsLoader.cs      # Shared settings loading
 ├── Interfaces/
-│   ├── IMarketDataProviderService.cs   # Market data abstraction
+│   ├── IBrokerService.cs             # Broker abstraction
+│   ├── IMarketDataProviderService.cs  # Market data abstraction
 │   └── IStrategy.cs                   # Strategy interface
-├── Strategies/
-│   ├── StrategyBase.cs                # Abstract base class
-│   ├── RangeTradingStrategy.cs         # Range trading strategy
-│   ├── OpenClawStrategy.cs            # OpenClaw agent-driven strategy
-│   └── OpenClawSimpleStrategy.cs       # Simple OpenClaw child strategy
+├── Models/
+│   ├── MarketContext.cs       # Market data context for strategies
+│   ├── OpenClawResponse.cs    # OpenClaw agent response model
+│   ├── Order.cs               # Order, BrokerBalance, OrderResult
+│   ├── OrderEnums.cs          # OrderSide, OrderType, OrderStatus
+│   ├── Position.cs            # Position (symbol, qty, avg cost, p&l)
+│   ├── Settings.cs            # Configuration model
+│   ├── Signal.cs              # Trading signal (Buy/Sell/Hold)
+│   ├── StockLookup.cs         # Stock tracking config
+│   └── StockPrice.cs          # Price data model
 ├── Services/
-│   ├── FinnhubService.cs       # Finnhub API integration
-│   ├── StockFileService.cs     # File-based stock data (read/write)
-│   └── OpenClawService.cs      # OpenClaw agent CLI integration
+│   ├── AlpacaBrokerService.cs # Alpaca API integration
+│   ├── FinnhubService.cs      # Finnhub API integration
+│   ├── OpenClawService.cs     # OpenClaw agent CLI integration
+│   └── StockFileService.cs    # File-based stock data (read/write)
+├── Strategies/
+│   ├── OpenClawStrategy.cs    # OpenClaw agent-driven strategy
+│   └── StrategyBase.cs        # Abstract base class
 ├── tests/
 │   ├── TinCan.Tests.Unit/
 │   └── TinCan.Tests.Integration/

@@ -6,6 +6,23 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <AssemblyName>TinCan</AssemblyName>
+
+    <!-- NuGet Package Metadata -->
+    <PackageId>TinCan-CLI</PackageId>
+    <Version>0.1.0</Version>
+    <Authors>0x68656c6c6f20776f726c64</Authors>
+    <Company>0x68656c6c6f20776f726c64</Company>
+    <Product>TinCan CLI</Product>
+    <Description>A command-line trading bot that automates stock trading strategies using Finnhub market data and Alpaca brokerage</Description>
+    <PackageTags>trading;bot;stocks;alpaca;finnhub</PackageTags>
+    <PackageProjectUrl>https://github.com/0x68656c6c6f20776f726c64/TinCan-CLI</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/0x68656c6c6f20776f726c64/TinCan-CLI</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <Copyright>Copyright 2024</Copyright>
+    <PackageReadmeFile>Readme.md</PackageReadmeFile>
+
+    <!-- Tool Packaging -->
     <PackAsTool>true</PackAsTool>
     <ToolCommandName>tincan</ToolCommandName>
     <PackageOutputPath>/tmp/tincan-packages/</PackageOutputPath>
@@ -15,6 +32,7 @@
     <Compile Remove="tests/**" />
     <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="4.1.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <None Include="Readme.md" Pack="true" PackagePath="\" />
   </ItemGroup>
 
 </Project>

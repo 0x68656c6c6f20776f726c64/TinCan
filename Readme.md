@@ -63,7 +63,7 @@ dotnet tool uninstall -g TinCan-CLI
 ## 🛠️ CLI Commands
 
 ### `tincan fetch [--interval <minutes>] [--settings <path>]`
-Runs the scheduler loop — fetches prices on the configured interval. Same as the original `dotnet run` behavior.
+Runs the scheduler loop — fetches prices on the configured interval.
 ```bash
 tincan fetch --interval 5
 ```
@@ -87,17 +87,51 @@ Loads and displays the current `MarketContext` for a symbol (result file → str
 tincan context U --json
 ```
 
-### `tincan orders [--open] [--symbol <symbol>] [--provider <provider>]`
-Lists orders from the broker. **Stub** — requires Story #13 (Execution Layer).
+### `tincan balance [--settings <path>]`
+Gets account balance from the broker (cash and equity).
+```bash
+tincan balance
+```
 
-### `tincan order <orderId> [--provider <provider>]`
-Gets details of a specific order. **Stub** — requires Story #13.
+### `tincan buy <symbol> <quantity> [--type <market|limit>] [--price <limit-price>] [--settings <path>]`
+Places a buy order for a specified quantity of shares.
+```bash
+tincan buy AAPL 10
+tincan buy AAPL 10 --type limit --price 150.00
+```
 
-### `tincan positions [--provider <provider>]`
-Views current positions from the broker. **Stub** — requires Story #13.
+### `tincan sell <symbol> <quantity> [--type <market|limit>] [--price <limit-price>] [--settings <path>]`
+Places a sell order for a specified quantity of shares.
+```bash
+tincan sell AAPL 5
+tincan sell AAPL 5 --type limit --price 160.00
+```
 
-### `tincan cancel <orderId> [--provider <provider>]`
-Cancels an open order. **Stub** — requires Story #13.
+### `tincan positions [--settings <path>]`
+Views current positions from the broker.
+```bash
+tincan positions
+```
+
+### `tincan orders [--open] [--symbol <symbol>] [--settings <path>]`
+Lists orders from the broker.
+```bash
+tincan orders
+tincan orders --open
+tincan orders --symbol AAPL
+```
+
+### `tincan order <orderId> [--settings <path>]`
+Gets details of a specific order.
+```bash
+tincan order 12345
+```
+
+### `tincan cancel <orderId> [--settings <path>]`
+Cancels an open order.
+```bash
+tincan cancel 12345
+```
 
 ---
 
@@ -225,7 +259,8 @@ TinCan/
 - [x] OpenClaw-powered strategy
 - [x] CLI app with command dispatch
 - [x] LoadMarketContext (Story #9)
-- [ ] Execution Layer - Broker Abstraction + Paper Trading (Story #13)
+- [x] Execution Layer - Broker Abstraction + Paper Trading (Story #13)
+- [x] NuGet package configuration (Story #15)
 - [ ] Risk management module
 - [ ] Backtesting framework
 

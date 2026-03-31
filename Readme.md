@@ -20,16 +20,42 @@ Market Data → Signal Engine → Sandbox Simulation → Execution Layer → Ris
 
 ## 📦 As a CLI Tool
 
-TinCan can be installed as a global CLI tool:
+### Install from NuGet
+
+TinCan-CLI is published as a NuGet tool package. You can install it directly from NuGet:
 
 ```bash
-dotnet tool install -g TinCan
+dotnet tool install -g TinCan-CLI
 ```
 
 Once installed, use the `tincan` command from anywhere:
 
 ```bash
 tincan --help
+```
+
+### Install from Local Package
+
+If you have the package locally:
+
+```bash
+dotnet tool install -g --add-source /tmp/tincan-packages/ TinCan-CLI
+```
+
+### Update Package
+
+To update to the latest version:
+
+```bash
+dotnet tool update -g TinCan-CLI
+```
+
+### Uninstall
+
+To uninstall:
+
+```bash
+dotnet tool uninstall -g TinCan-CLI
 ```
 
 ---
@@ -75,43 +101,54 @@ Cancels an open order. **Stub** — requires Story #13.
 
 ---
 
-## 🚀 Getting Started (Development)
+## 🚀 Getting Started
 
-### 1. Prerequisites
+### Option 1: Use Published NuGet Package (Recommended)
+
+```bash
+# Install the tool
+dotnet tool install -g TinCan-CLI
+
+# Configure your API keys
+cp settings.example.json settings.json
+# Edit settings.json with your Finnhub and Alpaca API keys
+
+# Run commands
+tincan fetch --interval 5
+tincan price AAPL
+```
+
+### Option 2: Development Mode
+
+If you want to contribute or modify TinCan:
+
+```bash
+# Clone the repository
+git clone https://github.com/0x68656c6c6f20776f726c64/TinCan-CLI.git
+cd TinCan-CLI
+
+# Restore and build
+dotnet restore
+dotnet build
+
+# Configure
+cp settings.example.json settings.json
+# Edit settings.json with your API keys
+
+# Run
+dotnet run -- fetch
+
+# Or pack and install locally
+dotnet pack -c Release
+dotnet tool install -g --add-source /tmp/tincan-packages/ .
+```
+
+### Prerequisites
 
 * [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0)
 * API keys:
   * [Finnhub](https://finnhub.io) — free tier available
-
-### 2. Clone and build
-
-```bash
-git clone https://github.com/0x68656c6c6f20776f726c64/TinCan-CLI.git
-cd TinCan-CLI
-dotnet restore
-dotnet build
-```
-
-### 3. Configure
-
-```bash
-cp stock_bot/settings.example.json stock_bot/settings.json
-# Edit stock_bot/settings.json with your Finnhub API key
-```
-
-### 4. Run
-
-```bash
-# Run as CLI
-dotnet run -- fetch
-
-# Or install as global tool
-dotnet pack -c Release
-dotnet tool install -g --add-source /tmp/tincan-packages/ .
-
-# Then use globally
-tincan fetch
-```
+  * [Alpaca](https://alpaca.markets) — for broker integration
 
 ---
 

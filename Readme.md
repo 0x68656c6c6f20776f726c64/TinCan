@@ -61,6 +61,12 @@ Loads and displays the current `MarketContext` for a symbol.
 tincan context U --json
 ```
 
+### `tincan balance [--settings <path>]`
+Gets account balance from the broker (cash and equity).
+```bash
+tincan balance --settings stock_bot/settings.json
+```
+
 ### `tincan orders [--open] [--symbol <symbol>] [--provider <provider>] [--settings <path>]`
 Lists orders from the broker.
 ```bash
@@ -259,6 +265,7 @@ TinCan/
 - [x] CLI app with command dispatch
 - [x] LoadMarketContext (Story #9)
 - [x] Execution Layer - Broker Abstraction + Paper Trading (Story #13)
+- [x] NuGet package configuration (Story #15)
 - [ ] Risk management module
 - [ ] Backtesting framework
 

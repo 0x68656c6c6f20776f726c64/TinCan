@@ -190,6 +190,7 @@ public class CliCommandsIntegrationTests
     [DataRow("context --help", 0, "context")]
     [DataRow("orders --help", 0, "orders")]
     [DataRow("positions --help", 0, "positions")]
+    [DataRow("balance --help", 0, "balance")]
     [DataRow("fetch --help", 0, "fetch")]
     public async Task CliSubcommand_Help_ReturnsHelpText(string command, int expectedExitCode, string expectedOutput)
     {
@@ -587,6 +588,19 @@ public class CliCommandsIntegrationTests
 
         // Alpaca broker works, should show positions or "No positions"
         Assert.IsTrue(result.ExitCode == 0 || result.Output.Contains("positions") || result.Output.Contains("Provider"));
+    }
+
+    [TestMethod]
+    public async Task BalanceCommand_ReturnsBalance()
+    {
+        var settingsPath = GetSettingsPath();
+        var result = await RunCliAsyncWithSettings("balance", settingsPath);
+
+        Assert.IsTrue(
+            result.ExitCode == 0
+            || result.Output.Contains("Account Balance:")
+            || result.Output.Contains("Provider"),
+            $"Unexpected balance result. ExitCode: {result.ExitCode}, Output: {result.Output}, Error: {result.Error}");
     }
 
     [TestMethod]

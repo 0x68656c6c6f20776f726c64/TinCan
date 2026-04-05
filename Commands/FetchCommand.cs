@@ -9,16 +9,12 @@ public static class FetchCommand
     {
         var intervalOpt = app.Option<int>("--interval", "Fetch interval in minutes", CommandOptionType.SingleValue);
         var settingsOpt = app.Option<string>("--settings", "Path to settings.json", CommandOptionType.SingleValue);
-        var providerOpt = app.Option<string>("--provider", "Data provider (currently only finnhub)", CommandOptionType.SingleValue);
         app.HelpOption("-?|-h|--help");
 
         app.OnExecute(() =>
         {
             var settings = Infrastructure.SettingsLoader.Load(settingsOpt.Value());
             var projectDir = Directory.GetCurrentDirectory();
-
-            if (providerOpt.HasValue())
-                Console.WriteLine($"[INFO] Provider: {providerOpt.Value()}");
 
             IMarketDataProviderService marketData;
             try

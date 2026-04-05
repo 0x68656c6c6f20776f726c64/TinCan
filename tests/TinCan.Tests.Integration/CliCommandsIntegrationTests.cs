@@ -64,6 +64,27 @@ public class CliCommandsIntegrationTests
             || combined.Contains("opposite side market/stop order exists");
     }
 
+
+    private static string? TryExtractOrderId(string output)
+    {
+        var lines = output.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
+        foreach (var rawLine in lines)
+        {
+            var line = rawLine.Trim();
+            if (!line.StartsWith("Order ID:", StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            var parts = line.Split(':', 2);
+            if (parts.Length < 2)
+                return null;
+
+            var orderId = parts[1].Trim();
+            return string.IsNullOrWhiteSpace(orderId) ? null : orderId;
+        }
+
+        return null;
+    }
+
     private static string GetTinCanDir()
     {
         var testDir = Directory.GetCurrentDirectory();
@@ -450,6 +471,55 @@ public class CliCommandsIntegrationTests
         Assert.AreEqual(0, result.ExitCode, $"Sell failed: {result.Output} {result.Error}");
         StringAssert.Contains(result.Output, "Order placed successfully");
         StringAssert.Contains(result.Output, "Sell");
+    }
+
+    [TestMethod]
+    public async Task CancelCommand_CanCancelPlacedOpenOrder()
+    {
+        if (string.IsNullOrEmpty(_apiKey))
+        {
+            Assert.Inconclusive("FINNHUB_API_KEY not configured");
+            return;
+        }
+
+        var settingsPath = Path.Combine(GetTinCanDir(), "stock_bot", "settings.json");
+        if (!File.Exists(settingsPath))
+        {
+            Assert.Inconclusive("stock_bot/settings.json not found");
+            return;
+        }
+
+        string? orderId = null;
+
+        try
+        {
+            var buyResult = await RunCliAsyncWithSettings("buy AAPL 1 --limit 1.00", settingsPath);
+
+            if (IsWashTradeRejectedResult(buyResult))
+                Assert.Inconclusive("CancelCommand_CanCancelPlacedOpenOrder skipped because Alpaca rejected the setup order as a potential wash trade due to an existing opposite-side order.");
+
+            Assert.AreEqual(0, buyResult.ExitCode, $"Setup buy order failed: {buyResult.Output} {buyResult.Error}");
+            StringAssert.Contains(buyResult.Output, "Order placed successfully");
+
+            orderId = TryExtractOrderId(buyResult.Output);
+            Assert.IsFalse(string.IsNullOrWhiteSpace(orderId), $"Could not extract order ID from output: {buyResult.Output}");
+
+            var orderResult = await RunCliAsyncWithSettings($"order {orderId}", settingsPath);
+            Assert.AreEqual(0, orderResult.ExitCode, $"Order lookup failed: {orderResult.Output} {orderResult.Error}");
+            StringAssert.Contains(orderResult.Output, orderId);
+            StringAssert.Contains(orderResult.Output, "AAPL");
+
+            var cancelResult = await RunCliAsyncWithSettings($"cancel {orderId}", settingsPath);
+            Assert.AreEqual(0, cancelResult.ExitCode, $"Cancel failed: {cancelResult.Output} {cancelResult.Error}");
+            StringAssert.Contains(cancelResult.Output, "cancelled successfully");
+        }
+        finally
+        {
+            if (!string.IsNullOrWhiteSpace(orderId))
+            {
+                _ = await RunCliAsyncWithSettings($"cancel {orderId}", settingsPath);
+            }
+        }
     }
 
     [TestMethod]

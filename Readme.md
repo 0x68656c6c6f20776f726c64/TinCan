@@ -150,7 +150,15 @@ TinCan supports multiple broker providers:
 ```json
 {
   "providers": {
+    "finnhub": {
+      "api_key": "",
+      "timeout": 5,
+      "enabled": true
+    },
     "broker": "alpaca"
+  },
+  "scheduler": {
+    "interval_minutes": 5
   },
   "broker": {
     "alpaca": {
@@ -160,6 +168,14 @@ TinCan supports multiple broker providers:
     }
   }
 }
+```
+
+The CLI looks for configuration in `settings.json` first, then `stock_bot/settings.json` by default.
+
+Copy the example file and fill in only the keys you need:
+```bash
+cp stock_bot/settings.example.json stock_bot/settings.json
+# Edit stock_bot/settings.json with your Finnhub and optional Alpaca keys
 ```
 
 ---
@@ -173,8 +189,8 @@ TinCan supports multiple broker providers:
 dotnet tool install -g TinCan-CLI
 
 # Configure your API keys
-cp settings.example.json settings.json
-# Edit settings.json with your Finnhub and Alpaca API keys
+cp stock_bot/settings.example.json stock_bot/settings.json
+# Edit stock_bot/settings.json with your Finnhub and optional Alpaca API keys
 
 # Run commands
 tincan fetch --interval 5
@@ -195,8 +211,8 @@ dotnet restore
 dotnet build
 
 # Configure
-cp settings.example.json settings.json
-# Edit settings.json with your API keys
+cp stock_bot/settings.example.json stock_bot/settings.json
+# Edit stock_bot/settings.json with your API keys
 
 # Run
 dotnet run -- fetch
@@ -225,14 +241,9 @@ dotnet build
 ### 3. Configure
 
 ```bash
-cp settings.example.json settings.json
-# Edit settings.json with your Finnhub API key
-```
-
-For trading, also add Alpaca API keys to `stock_bot/settings.json`:
-```bash
 cp stock_bot/settings.example.json stock_bot/settings.json
-# Edit stock_bot/settings.json with your broker settings
+# Edit stock_bot/settings.json with your Finnhub API key
+# Add Alpaca keys too if you want trading commands
 ```
 
 ### 4. Run
@@ -261,64 +272,57 @@ dotnet test
 
 ## 📁 Project Structure
 
-```
+```text
 TinCan/
-├── Program.cs                  # CLI entry point
-├── Scheduler.cs                # Main scheduling loop
-├── Commands/                   # CLI command handlers
-│   ├── BackfillCommand.cs
-│   ├── BalanceCommand.cs
-│   ├── BuyCommand.cs
-│   ├── CancelCommand.cs
-│   ├── ContextCommand.cs
-│   ├── FetchCommand.cs
-│   ├── OrderCommand.cs
-│   ├── BuyCommand.cs
-│   ├── SellCommand.cs
-│   ├── PositionsCommand.cs
-│   ├── PriceCommand.cs
-│   └── SellCommand.cs
-├── Factory/
-│   └── BrokerFactory.cs       # Broker service factory
-├── Infrastructure/
-│   ├── SettingsLoader.cs      # Shared settings loading
-│   ├── ProviderResolver.cs    # Provider resolution (flag > env > config)
-│   └── MarketDataProviderFactory.cs  # Market data factory
-├── Factory/
-│   └── BrokerFactory.cs       # Broker service factory
-├── Models/
-│   ├── Settings.cs            # Configuration model
-│   ├── StockLookup.cs         # Stock tracking config
-│   ├── StockPrice.cs          # Price data model
-│   ├── Signal.cs              # Trading signal (Buy/Sell/Hold)
-│   ├── MarketContext.cs       # Market data context for strategies
-│   ├── Order.cs               # Order, BrokerBalance, ExecutionResult
-│   └── OrderEnums.cs          # OrderSide, OrderType, OrderStatus
-├── Interfaces/
-│   ├── IMarketDataProviderService.cs   # Market data abstraction
-│   ├── IBrokerService.cs             # Broker abstraction
-│   └── IStrategy.cs                  # Strategy interface
-├── Services/
-│   ├── FinnhubService.cs       # Finnhub API integration
-│   ├── StockFileService.cs     # File-based stock data (read/write)
-│   ├── OpenClawService.cs     # OpenClaw agent CLI integration
-│   ├── PaperBrokerService.cs   # Paper trading simulation
-│   └── AlpacaBrokerService.cs # Alpaca API integration
-├── Strategies/
-│   ├── StrategyBase.cs                # Abstract base class
-│   ├── RangeTradingStrategy.cs         # Range trading strategy
-│   ├── OpenClawStrategy.cs            # OpenClaw agent-driven strategy
-│   └── OpenClawSimpleStrategy.cs       # Simple OpenClaw child strategy
-├── tests/
-│   ├── TinCan.Tests.Unit/
-│   └── TinCan.Tests.Integration/
-└── stock_bot/
-    ├── settings.example.json
-    └── stock_lookup.json
+|-- Program.cs                     # CLI entry point
+|-- Scheduler.cs                   # Scheduler loop
+|-- Commands/                      # CLI command handlers
+|   |-- BackfillCommand.cs
+|   |-- BalanceCommand.cs
+|   |-- BuyCommand.cs
+|   |-- CancelCommand.cs
+|   |-- ContextCommand.cs
+|   |-- FetchCommand.cs
+|   |-- OrderCommand.cs
+|   |-- OrdersCommand.cs
+|   |-- PositionsCommand.cs
+|   |-- PriceCommand.cs
+|   `-- SellCommand.cs
+|-- Factory/
+|   |-- BrokerFactory.cs
+|   `-- MarketDataProviderFactory.cs
+|-- Infrastructure/
+|   |-- ProviderResolver.cs
+|   `-- SettingsLoader.cs
+|-- Interfaces/
+|   |-- IBrokerService.cs
+|   `-- IMarketDataProviderService.cs
+|-- Models/
+|   |-- MarketContext.cs
+|   |-- OpenClawResponse.cs
+|   |-- Order.cs
+|   |-- OrderEnums.cs
+|   |-- Position.cs
+|   |-- Settings.cs
+|   |-- Signal.cs
+|   |-- StockLookup.cs
+|   `-- StockPrice.cs
+|-- Services/
+|   |-- AlpacaBrokerService.cs
+|   |-- FinnhubService.cs
+|   `-- StockFileService.cs
+|-- stock_bot/
+|   |-- settings.example.json
+|   |-- settings.json
+|   `-- stock_lookup.json
+|-- tests/
+|   |-- TinCan.Tests.Integration/
+|   `-- TinCan.Tests.Unit/
+|-- TinCan.csproj
+`-- TinCan.sln
 ```
 
 ---
-
 ## 🗺️ Roadmap
 
 - [x] Market data layer (Finnhub)

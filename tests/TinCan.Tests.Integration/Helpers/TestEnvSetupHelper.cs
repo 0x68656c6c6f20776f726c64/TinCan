@@ -8,6 +8,15 @@ namespace TinCan.Tests.Integration.Helpers;
 /// </summary>
 public class FinnhubServiceSetupHelper
 {
+    private static readonly string[] ProxyEnvironmentVariables =
+    [
+        "ALL_PROXY",
+        "HTTP_PROXY",
+        "HTTPS_PROXY",
+        "GIT_HTTP_PROXY",
+        "GIT_HTTPS_PROXY"
+    ];
+
     /// <summary>
     /// Sets up the test environment and retrieves the Finnhub API key from settings file or environment variable.
     /// </summary>
@@ -18,8 +27,8 @@ public class FinnhubServiceSetupHelper
         var dir = Directory.GetCurrentDirectory();
         string? settingsPath = null;
 
-        // Search up to 5 levels for settings.json in repo root or stock_bot/
-        for (int i = 0; i < 5; i++)
+        // Search upward from the test output directory until we reach the repo root.
+        for (int i = 0; i < 8; i++)
         {
             // Check root settings.json
             var rootCandidate = Path.Combine(dir, "settings.json");
@@ -66,5 +75,24 @@ public class FinnhubServiceSetupHelper
         }
 
         return apiKey;
+    }
+
+    public static Dictionary<string, string?> ClearProxyEnvironmentVariables()
+    {
+        var originalValues = new Dictionary<string, string?>(StringComparer.OrdinalIgnoreCase);
+
+        foreach (var variable in ProxyEnvironmentVariables)
+        {
+            originalValues[variable] = Environment.GetEnvironmentVariable(variable);
+            Environment.SetEnvironmentVariable(variable, null);
+        }
+
+        return originalValues;
+    }
+
+    public static void RestoreEnvironmentVariables(Dictionary<string, string?> values)
+    {
+        foreach (var pair in values)
+            Environment.SetEnvironmentVariable(pair.Key, pair.Value);
     }
 }

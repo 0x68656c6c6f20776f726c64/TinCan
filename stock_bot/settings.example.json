@@ -1,11 +1,20 @@
 {
-    "finnhub": {
-        "api_key": "your_finnhub_api_key",
-        "timeout": 5
+    "providers": {
+        "finnhub": {
+            "api_key": "",
+            "timeout": 5,
+            "enabled": true
+        },
+        "broker": "alpaca"
     },
-    "alpaca": {
-        "api_key": "your_alpaca_api_key",
-        "api_secret": "your_alpaca_api_secret",
-        "base_url": "https://paper-api.alpaca.markets"
+    "scheduler": {
+        "interval_minutes": 5
+    },
+    "broker": {
+        "alpaca": {
+            "apiKey": "",
+            "secretKey": "",
+            "baseUrl": "https://paper-api.alpaca.markets"
+        }
     }
 }

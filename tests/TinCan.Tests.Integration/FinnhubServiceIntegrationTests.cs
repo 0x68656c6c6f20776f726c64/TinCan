@@ -9,11 +9,19 @@ namespace TinCan.Tests.Integration;
 public class FinnhubServiceIntegrationTests
 {
     private string? _apiKey;
+    private Dictionary<string, string?> _originalProxyEnvironment = null!;
 
     [TestInitialize]
     public void Setup()
     {
+        _originalProxyEnvironment = FinnhubServiceSetupHelper.ClearProxyEnvironmentVariables();
         _apiKey = FinnhubServiceSetupHelper.SetupAndGetApiKey();
+    }
+
+    [TestCleanup]
+    public void Cleanup()
+    {
+        FinnhubServiceSetupHelper.RestoreEnvironmentVariables(_originalProxyEnvironment);
     }
 
     [TestMethod]

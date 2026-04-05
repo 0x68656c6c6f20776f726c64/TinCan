@@ -65,6 +65,7 @@ public class CliCommandsIntegrationTests
     }
 
 
+
     private static string? TryExtractOrderId(string output)
     {
         var lines = output.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries);
@@ -89,6 +90,11 @@ public class CliCommandsIntegrationTests
     {
         var testDir = Directory.GetCurrentDirectory();
         return Path.GetFullPath(Path.Combine(testDir, "..", "..", "..", "..", ".."));
+    }
+
+    private static string GetExternalStockBotDir()
+    {
+        return Path.GetFullPath(Path.Combine(GetTinCanDir(), "..", "stock_bot"));
     }
 
     private async Task<ProcessResult> RunCliAsync(string args, int timeoutSeconds = 30)
@@ -377,9 +383,9 @@ public class CliCommandsIntegrationTests
 
     private string GetSettingsPath()
     {
-        var settingsPath = Path.Combine(GetTinCanDir(), "stock_bot", "settings.json");
+        var settingsPath = Path.Combine(GetExternalStockBotDir(), "settings.json");
         if (!File.Exists(settingsPath))
-            throw new InvalidOperationException("stock_bot/settings.json not found");
+            throw new InvalidOperationException("../stock_bot/settings.json not found");
         return settingsPath;
     }
 
@@ -434,10 +440,10 @@ public class CliCommandsIntegrationTests
         }
 
         // Get settings path for Alpaca
-        var settingsPath = Path.Combine(GetTinCanDir(), "stock_bot", "settings.json");
+        var settingsPath = Path.Combine(GetExternalStockBotDir(), "settings.json");
         if (!File.Exists(settingsPath))
         {
-            Assert.Inconclusive("stock_bot/settings.json not found");
+            Assert.Inconclusive("../stock_bot/settings.json not found");
             return;
         }
 
@@ -457,10 +463,10 @@ public class CliCommandsIntegrationTests
             return;
         }
 
-        var settingsPath = Path.Combine(GetTinCanDir(), "stock_bot", "settings.json");
+        var settingsPath = Path.Combine(GetExternalStockBotDir(), "settings.json");
         if (!File.Exists(settingsPath))
         {
-            Assert.Inconclusive("stock_bot/settings.json not found");
+            Assert.Inconclusive("../stock_bot/settings.json not found");
             return;
         }
 
@@ -483,10 +489,10 @@ public class CliCommandsIntegrationTests
             return;
         }
 
-        var settingsPath = Path.Combine(GetTinCanDir(), "stock_bot", "settings.json");
+        var settingsPath = Path.Combine(GetExternalStockBotDir(), "settings.json");
         if (!File.Exists(settingsPath))
         {
-            Assert.Inconclusive("stock_bot/settings.json not found");
+            Assert.Inconclusive("../stock_bot/settings.json not found");
             return;
         }
 

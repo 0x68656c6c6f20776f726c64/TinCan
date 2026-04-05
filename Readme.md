@@ -90,40 +90,40 @@ tincan context U --json
 ### `tincan orders [--open] [--symbol <symbol>] [--provider <provider>] [--settings <path>]`
 Lists orders from the broker.
 ```bash
-tincan orders --settings stock_bot/settings.json
-tincan orders --open --settings stock_bot/settings.json
+tincan orders --settings ../stock_bot/settings.json
+tincan orders --open --settings ../stock_bot/settings.json
 ```
 
 ### `tincan order <orderId> [--provider <provider>] [--settings <path>]`
 Gets details of a specific order.
 ```bash
-tincan order abc123 --settings stock_bot/settings.json
+tincan order abc123 --settings ../stock_bot/settings.json
 ```
 
 ### `tincan buy <symbol> <quantity> [--limit <price>] [--settings <path>]`
 Places a buy order.
 ```bash
-tincan buy U 10 --settings stock_bot/settings.json
-tincan buy AAPL 5 --limit 150.00 --settings stock_bot/settings.json
+tincan buy U 10 --settings ../stock_bot/settings.json
+tincan buy AAPL 5 --limit 150.00 --settings ../stock_bot/settings.json
 ```
 
 ### `tincan sell <symbol> <quantity> [--limit <price>] [--settings <path>]`
 Places a sell order.
 ```bash
-tincan sell U 5 --settings stock_bot/settings.json
-tincan sell AAPL 3 --limit 160.00 --settings stock_bot/settings.json
+tincan sell U 5 --settings ../stock_bot/settings.json
+tincan sell AAPL 3 --limit 160.00 --settings ../stock_bot/settings.json
 ```
 
 ### `tincan positions [--provider <provider>] [--settings <path>]`
 Views current positions from the broker.
 ```bash
-tincan positions --settings stock_bot/settings.json
+tincan positions --settings ../stock_bot/settings.json
 ```
 
 ### `tincan cancel <orderId> [--provider <provider>] [--settings <path>]`
 Cancels an open order.
 ```bash
-tincan cancel abc123 --settings stock_bot/settings.json
+tincan cancel abc123 --settings ../stock_bot/settings.json
 ```
 
 ---
@@ -170,12 +170,13 @@ TinCan supports multiple broker providers:
 }
 ```
 
-The CLI looks for configuration in `settings.json` first, then `stock_bot/settings.json` by default.
+The CLI looks for configuration in `settings.json` first, then `stock_bot/settings.json`, then `../stock_bot/settings.json` by default.
 
 Copy the example file and fill in only the keys you need:
 ```bash
-cp stock_bot/settings.example.json stock_bot/settings.json
-# Edit stock_bot/settings.json with your Finnhub and optional Alpaca keys
+mkdir -p ../stock_bot
+cp settings.example.json ../stock_bot/settings.json
+# Edit ../stock_bot/settings.json with your Finnhub and optional Alpaca keys
 ```
 
 ---
@@ -189,8 +190,9 @@ cp stock_bot/settings.example.json stock_bot/settings.json
 dotnet tool install -g TinCan-CLI
 
 # Configure your API keys
-cp stock_bot/settings.example.json stock_bot/settings.json
-# Edit stock_bot/settings.json with your Finnhub and optional Alpaca API keys
+mkdir -p ../stock_bot
+cp settings.example.json ../stock_bot/settings.json
+# Edit ../stock_bot/settings.json with your Finnhub and optional Alpaca API keys
 
 # Run commands
 tincan fetch --interval 5
@@ -211,8 +213,9 @@ dotnet restore
 dotnet build
 
 # Configure
-cp stock_bot/settings.example.json stock_bot/settings.json
-# Edit stock_bot/settings.json with your API keys
+mkdir -p ../stock_bot
+cp settings.example.json ../stock_bot/settings.json
+# Edit ../stock_bot/settings.json with your API keys
 
 # Run
 dotnet run -- fetch
@@ -241,8 +244,9 @@ dotnet build
 ### 3. Configure
 
 ```bash
-cp stock_bot/settings.example.json stock_bot/settings.json
-# Edit stock_bot/settings.json with your Finnhub API key
+mkdir -p ../stock_bot
+cp settings.example.json ../stock_bot/settings.json
+# Edit ../stock_bot/settings.json with your Finnhub API key
 # Add Alpaca keys too if you want trading commands
 ```
 
@@ -311,15 +315,18 @@ TinCan/
 |   |-- AlpacaBrokerService.cs
 |   |-- FinnhubService.cs
 |   `-- StockFileService.cs
-|-- stock_bot/
-|   |-- settings.example.json
-|   |-- settings.json
-|   `-- stock_lookup.json
 |-- tests/
 |   |-- TinCan.Tests.Integration/
 |   `-- TinCan.Tests.Unit/
 |-- TinCan.csproj
 `-- TinCan.sln
+```
+
+External config/data directory:
+```text
+../stock_bot/
+|-- settings.json
+`-- stock_lookup.json
 ```
 
 ---

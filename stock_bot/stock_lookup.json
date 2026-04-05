@@ -1,9 +1,0 @@
-{
-  "stocks": {
-    "U": {
-      "enabled": true,
-      "name": "Unity Software",
-      "output": "unity_stock.json"
-    }
-  }
-}

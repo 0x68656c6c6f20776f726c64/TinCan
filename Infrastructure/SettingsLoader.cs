@@ -10,7 +10,8 @@ public static class SettingsLoader
     private static readonly string[] DefaultSettingsPaths =
     [
         DefaultSettingsFile,
-        Path.Combine("stock_bot", "settings.json")
+        Path.Combine("stock_bot", "settings.json"),
+        Path.Combine("..", "stock_bot", "settings.json")
     ];
 
     public static Settings Load(string? settingsPath = null)

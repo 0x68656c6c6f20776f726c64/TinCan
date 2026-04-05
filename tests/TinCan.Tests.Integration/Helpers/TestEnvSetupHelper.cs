@@ -45,6 +45,14 @@ public class FinnhubServiceSetupHelper
                 settingsPath = botCandidate;
                 break;
             }
+
+            // Check sibling ../stock_bot/settings.json
+            var siblingBotCandidate = Path.GetFullPath(Path.Combine(dir, "..", "stock_bot", "settings.json"));
+            if (File.Exists(siblingBotCandidate))
+            {
+                settingsPath = siblingBotCandidate;
+                break;
+            }
             
             var parent = Directory.GetParent(dir);
             if (parent == null) break;

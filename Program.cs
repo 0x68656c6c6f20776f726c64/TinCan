@@ -19,6 +19,7 @@ app.Command("sell", SellCommand.Execute);
 app.Command("positions", PositionsCommand.Execute);
 app.Command("balance", BalanceCommand.Execute);
 app.Command("cancel", CancelCommand.Execute);
+app.Command("tradingagent", TradingagentCommand.Execute);
 
 app.OnExecute(() =>
 {

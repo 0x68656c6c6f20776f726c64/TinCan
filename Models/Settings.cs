@@ -15,6 +15,9 @@ public class Settings
     
     [JsonProperty("results_dir")]
     public string? ResultsDir { get; set; }
+
+    [JsonProperty("tradingagents")]
+    public TradingagentsConfig? Tradingagents { get; set; }
 }
 
 public class Providers
@@ -61,6 +64,9 @@ public class Scheduler
     [JsonProperty("interval_minutes")]
     public int IntervalMinutes { get; set; } = 5;
 
+    [JsonProperty("tradingagent_time")]
+    public string? TradingagentTime { get; set; }
+
     [JsonProperty("historical")]
     public HistoricalSchedulerConfig? Historical { get; set; }
 }
@@ -75,4 +81,22 @@ public class HistoricalSchedulerConfig
 
     [JsonProperty("lookback_days")]
     public int LookbackDays { get; set; } = 30;
+}
+
+public class TradingagentsConfig
+{
+    [JsonProperty("path")]
+    public string? Path { get; set; }
+
+    [JsonProperty("results_path")]
+    public string? ResultsPath { get; set; }
+
+    [JsonProperty("default_analysts")]
+    public List<string>? DefaultAnalysts { get; set; }
+
+    [JsonProperty("default_depth")]
+    public int DefaultDepth { get; set; } = 2;
+
+    [JsonProperty("default_llm")]
+    public string? DefaultLlm { get; set; } = "minimax";
 }

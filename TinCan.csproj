@@ -33,6 +33,7 @@
     <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="4.1.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <None Include="Readme.md" Pack="true" PackagePath="\" />
+    <Content Include="scripts\**" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
 </Project>

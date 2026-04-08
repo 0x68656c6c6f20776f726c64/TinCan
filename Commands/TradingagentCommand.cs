@@ -48,7 +48,7 @@ public static class TradingagentCommand
 
             if (hasScheduleTime && !runNowOpt.HasValue())
             {
-                // Schedule mode - write job info to a status file and return
+                // Schedule mode - write job info to a scheduled jobs file
                 return ScheduleTradingAgent(symbol, date, analysts, depth, llm, resultsPath, scheduler!.TradingagentTime!, tradingagents.Path);
             }
             else
@@ -81,6 +81,7 @@ public static class TradingagentCommand
 
         Console.WriteLine($"[INFO] TradingAgent job scheduled for {symbol} at {scheduleTime}");
         Console.WriteLine($"[INFO] Job saved to {jobsFile}");
+        Console.WriteLine($"[INFO] Jobs will run during market hours (8:30 AM - 3:00 PM CT Mon-Fri)");
         return 0;
     }
 
@@ -102,30 +103,40 @@ public static class TradingagentCommand
 
         try
         {
-            var cliPath = Path.Combine(tradingagentsPath, "cli");
-            var mainPy = Path.Combine(cliPath, "main.py");
+            // Find the Python executable in the TradingAgents venv
+            // Use venv/bin/python which automatically activates the venv
+            var venvPython = Path.Combine(tradingagentsPath, "venv", "bin", "python");
+            var pythonExe = File.Exists(venvPython) ? venvPython : "/opt/homebrew/opt/python@3.13/bin/python3.13";
 
-            if (!File.Exists(mainPy))
+            // Find our helper script in the binary output
+            var scriptPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "scripts", "run_trading_agent.py");
+            if (!File.Exists(scriptPath))
             {
-                Console.WriteLine($"[ERROR] TradingAgents main.py not found at {mainPy}");
+                scriptPath = Path.Combine(Directory.GetCurrentDirectory(), "scripts", "run_trading_agent.py");
+            }
+            if (!File.Exists(scriptPath))
+            {
+                Console.WriteLine($"[ERROR] run_trading_agent.py not found at {scriptPath}");
                 ClearStatusFile();
                 return 1;
             }
 
-            var analystsList = analysts.Split(',').Select(a => a.Trim().ToLower()).ToList();
-            var analystsArg = string.Join(" ", analystsList);
+            // Build command: activate venv then run script
+            var activateScript = Path.Combine(tradingagentsPath, "venv", "bin", "activate");
+            var args = $"source '{activateScript}' && python \"{scriptPath}\" {symbol} {date} \"{analysts}\" {depth} {llm} \"{resultsPath}\"";
 
             var process = new System.Diagnostics.Process
             {
                 StartInfo = new System.Diagnostics.ProcessStartInfo
                 {
-                    FileName = "python",
-                    Arguments = $"-m cli.main analyze --ticker {symbol} --date {date} --analysts \"{analystsArg}\" --depth {depth} --llm {llm}",
-                    WorkingDirectory = cliPath,
+                    FileName = "/bin/bash",
+                    Arguments = $"-c \"{args}\"",
+                    WorkingDirectory = Path.GetDirectoryName(scriptPath) ?? Directory.GetCurrentDirectory(),
                     UseShellExecute = false,
                     RedirectStandardOutput = true,
                     RedirectStandardError = true,
-                    CreateNoWindow = true
+                    CreateNoWindow = true,
+                    EnvironmentVariables = { ["TA_TRADINGAGENTS_PATH"] = tradingagentsPath }
                 }
             };
 
@@ -134,14 +145,13 @@ public static class TradingagentCommand
                 if (!string.IsNullOrEmpty(e.Data))
                 {
                     Console.WriteLine(e.Data);
-                    UpdateStatusProgress(statusFile, symbol);
                 }
             };
             process.ErrorDataReceived += (sender, e) =>
             {
                 if (!string.IsNullOrEmpty(e.Data))
                 {
-                    Console.WriteLine($"[ERROR] {e.Data}");
+                    Console.WriteLine($"[STDERR] {e.Data}");
                 }
             };
 
@@ -150,8 +160,10 @@ public static class TradingagentCommand
             process.BeginErrorReadLine();
 
             status.Pid = process.Id;
+            status.Status = "Running";
             File.WriteAllText(statusFile, JsonConvert.SerializeObject(status, Formatting.Indented));
 
+            // Wait for process to complete
             process.WaitForExit();
 
             if (process.ExitCode == 0)
@@ -171,24 +183,6 @@ public static class TradingagentCommand
             Console.WriteLine($"[ERROR] {ex.Message}");
             ClearStatusFile();
             return 1;
-        }
-    }
-
-    private static void UpdateStatusProgress(string statusFile, string symbol)
-    {
-        if (File.Exists(statusFile))
-        {
-            try
-            {
-                var json = File.ReadAllText(statusFile);
-                var status = JsonConvert.DeserializeObject<TradingAgentStatus>(json);
-                if (status != null)
-                {
-                    status.Status = "Running";
-                    File.WriteAllText(statusFile, JsonConvert.SerializeObject(status, Formatting.Indented));
-                }
-            }
-            catch { }
         }
     }
 

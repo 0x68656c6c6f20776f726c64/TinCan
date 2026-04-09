@@ -8,7 +8,6 @@
     },
     "scheduler": {
         "interval_minutes": 5,
-        "tradingagent_time": "09:30",
         "historical": {
             "enabled": false,
             "resolution": "D",

@@ -15,7 +15,6 @@ public static class TradingagentCommand
         var depthOpt = app.Option<int>("--depth", "Research depth (1-5)", CommandOptionType.SingleValue);
         var llmOpt = app.Option<string>("--llm", "LLM provider", CommandOptionType.SingleValue);
         var settingsOpt = app.Option<string>("--settings", "Path to settings.json", CommandOptionType.SingleValue);
-        var runNowOpt = app.Option<bool>("--run-now", "Run immediately ignoring schedule", CommandOptionType.NoValue);
         app.HelpOption("-?|-h|--help");
 
         app.OnExecute(() =>
@@ -43,46 +42,9 @@ public static class TradingagentCommand
             var llm = llmOpt.HasValue() ? llmOpt.ParsedValue : (tradingagents.DefaultLlm ?? "minimax");
             var resultsPath = tradingagents.ResultsPath ?? Path.Combine(tradingagents.Path, "eval_results");
 
-            var scheduler = settings.Scheduler;
-            var hasScheduleTime = !string.IsNullOrWhiteSpace(scheduler?.TradingagentTime);
-
-            if (hasScheduleTime && !runNowOpt.HasValue())
-            {
-                // Schedule mode - write job info to a scheduled jobs file
-                return ScheduleTradingAgent(symbol, date, analysts, depth, llm, resultsPath, scheduler!.TradingagentTime!, tradingagents.Path);
-            }
-            else
-            {
-                // Run immediately
-                return RunTradingAgentNow(symbol, date, analysts, depth, llm, resultsPath, tradingagents.Path);
-            }
+            // Run immediately
+            return RunTradingAgentNow(symbol, date, analysts, depth, llm, resultsPath, tradingagents.Path);
         });
-    }
-
-    private static int ScheduleTradingAgent(string symbol, string date, string analysts, int depth, string llm, string resultsPath, string scheduleTime, string tradingagentsPath)
-    {
-        var jobInfo = new TradingAgentJob
-        {
-            Symbol = symbol,
-            Date = date,
-            Analysts = analysts,
-            Depth = depth,
-            Llm = llm,
-            ResultsPath = resultsPath,
-            ScheduleTime = scheduleTime,
-            TradingagentsPath = tradingagentsPath,
-            ScheduledAt = DateTime.Now
-        };
-
-        var jobsFile = GetScheduledJobsFile();
-        var jobs = LoadScheduledJobs();
-        jobs.Add(jobInfo);
-        SaveScheduledJobs(jobs, jobsFile);
-
-        Console.WriteLine($"[INFO] TradingAgent job scheduled for {symbol} at {scheduleTime}");
-        Console.WriteLine($"[INFO] Job saved to {jobsFile}");
-        Console.WriteLine($"[INFO] Jobs will run during market hours (8:30 AM - 3:00 PM CT Mon-Fri)");
-        return 0;
     }
 
     private static int RunTradingAgentNow(string symbol, string date, string analysts, int depth, string llm, string resultsPath, string tradingagentsPath)

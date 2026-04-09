@@ -54,22 +54,8 @@ public static class TradingagentCommand
         Console.WriteLine($"[INFO] Results will be saved to: {resultsPath}");
         Console.WriteLine("==================================================");
 
-        var statusFile = GetStatusFile();
-        var status = new TradingAgentStatus
-        {
-            Symbol = symbol,
-            StartTime = DateTime.Now,
-            Status = "Initializing"
-        };
-        File.WriteAllText(statusFile, JsonConvert.SerializeObject(status, Formatting.Indented));
-
         try
         {
-            // Find the Python executable in the TradingAgents venv
-            // Use venv/bin/python which automatically activates the venv
-            var venvPython = Path.Combine(tradingagentsPath, "venv", "bin", "python");
-            var pythonExe = File.Exists(venvPython) ? venvPython : "/opt/homebrew/opt/python@3.13/bin/python3.13";
-
             // Find our helper script in the binary output
             var scriptPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "scripts", "run_trading_agent.py");
             if (!File.Exists(scriptPath))
@@ -79,7 +65,6 @@ public static class TradingagentCommand
             if (!File.Exists(scriptPath))
             {
                 Console.WriteLine($"[ERROR] run_trading_agent.py not found at {scriptPath}");
-                ClearStatusFile();
                 return 1;
             }
 
@@ -121,10 +106,6 @@ public static class TradingagentCommand
             process.BeginOutputReadLine();
             process.BeginErrorReadLine();
 
-            status.Pid = process.Id;
-            status.Status = "Running";
-            File.WriteAllText(statusFile, JsonConvert.SerializeObject(status, Formatting.Indented));
-
             // Wait for process to complete
             process.WaitForExit();
 
@@ -137,54 +118,12 @@ public static class TradingagentCommand
                 Console.WriteLine($"[ERROR] TradingAgent exited with code {process.ExitCode}");
             }
 
-            ClearStatusFile();
             return process.ExitCode;
         }
         catch (Exception ex)
         {
             Console.WriteLine($"[ERROR] {ex.Message}");
-            ClearStatusFile();
             return 1;
         }
-    }
-
-    private static void ClearStatusFile()
-    {
-        var statusFile = GetStatusFile();
-        if (File.Exists(statusFile))
-        {
-            File.Delete(statusFile);
-        }
-    }
-
-    private static string GetStatusFile()
-    {
-        return Path.Combine(Path.GetTempPath(), "tincan_tradingagent_status.json");
-    }
-
-    private static string GetScheduledJobsFile()
-    {
-        return Path.Combine(Path.GetTempPath(), "tincan_tradingagent_scheduled.json");
-    }
-
-    private static List<TradingAgentJob> LoadScheduledJobs()
-    {
-        var file = GetScheduledJobsFile();
-        if (!File.Exists(file)) return new List<TradingAgentJob>();
-        try
-        {
-            var json = File.ReadAllText(file);
-            return JsonConvert.DeserializeObject<List<TradingAgentJob>>(json) ?? new List<TradingAgentJob>();
-        }
-        catch
-        {
-            return new List<TradingAgentJob>();
-        }
-    }
-
-    private static void SaveScheduledJobs(List<TradingAgentJob> jobs, string file)
-    {
-        var json = JsonConvert.SerializeObject(jobs, Formatting.Indented);
-        File.WriteAllText(file, json);
     }
 }

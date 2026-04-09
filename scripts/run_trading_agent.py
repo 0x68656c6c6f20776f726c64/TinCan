@@ -101,7 +101,15 @@ def main():
         }
         import json
         (results_dir / "summary.json").write_text(json.dumps(summary, indent=2))
-        print(f"[INFO] Results saved to {results_dir}")
+
+        # Copy detailed report from TradingAgents logs to results folder
+        log_source = Path(tradingagents_path) / "eval_results" / symbol / "TradingAgentsStrategy_logs" / f"full_states_log_{date}.json"
+        if log_source.exists():
+            import shutil
+            shutil.copy2(log_source, results_dir / f"detail_report_{timestamp}.json")
+            print(f"[INFO] Detailed report saved to {results_dir / f'detail_report_{timestamp}.json'}")
+        else:
+            print(f"[WARN] Detailed report not found at {log_source}")
 
     sys.exit(0)
 

@@ -10,8 +10,10 @@ import os
 from datetime import datetime
 
 # Add TradingAgents to path
-tradingagents_path = os.environ.get("TA_TRADINGAGENTS_PATH", "/Users/aryaliang/.openclaw/workspace/TradingAgents")
-sys.path.insert(0, tradingagents_path)
+tradingagents_path = os.environ.get("TA_TRADINGAGENTS_PATH")
+    if not tradingagents_path or not os.path.exists(tradingagents_path):
+        raise RuntimeError("TA_TRADINGAGENTS_PATH environment variable must be set to the TradingAgents directory path")
+    sys.path.insert(0, tradingagents_path)
 
 from tradingagents.graph.trading_graph import TradingAgentsGraph
 from tradingagents.default_config import DEFAULT_CONFIG
@@ -86,8 +88,9 @@ def main():
         results_dir = Path(results_path) / symbol / date
         results_dir.mkdir(parents=True, exist_ok=True)
 
-        # Save decision
-        (results_dir / "decision.txt").write_text(str(decision))
+        # Save decision with timestamp to avoid duplicates for same symbol/date
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        (results_dir / f"decision_{timestamp}.txt").write_text(str(decision))
 
         # Save final state summary
         summary = {

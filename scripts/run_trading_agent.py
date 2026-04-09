@@ -11,9 +11,9 @@ from datetime import datetime
 
 # Add TradingAgents to path
 tradingagents_path = os.environ.get("TA_TRADINGAGENTS_PATH")
-    if not tradingagents_path or not os.path.exists(tradingagents_path):
-        raise RuntimeError("TA_TRADINGAGENTS_PATH environment variable must be set to the TradingAgents directory path")
-    sys.path.insert(0, tradingagents_path)
+if not tradingagents_path or not os.path.exists(tradingagents_path):
+    raise RuntimeError("TA_TRADINGAGENTS_PATH environment variable must be set to the TradingAgents directory path")
+sys.path.insert(0, tradingagents_path)
 
 from tradingagents.graph.trading_graph import TradingAgentsGraph
 from tradingagents.default_config import DEFAULT_CONFIG

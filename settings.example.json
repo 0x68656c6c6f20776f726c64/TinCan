@@ -14,5 +14,12 @@
             "lookback_days": 30
         }
     },
-    "results_dir": "stock_bot/results"
+    "results_dir": "stock_bot/results",
+    "tradingagents": {
+        "path": "/path/to/TradingAgents",
+        "results_path": "/path/to/TradingAgents/eval_results",
+        "default_analysts": ["market", "social", "news", "fundamentals"],
+        "default_depth": 2,
+        "default_llm": "minimax"
+    }
 }

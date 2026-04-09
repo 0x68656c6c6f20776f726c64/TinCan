@@ -126,7 +126,69 @@ Cancels an open order.
 tincan cancel abc123 --settings ../stock_bot/settings.json
 ```
 
+### `tincan tradingagent <symbol> [--date <YYYY-MM-DD>] [--analysts <list>] [--depth <1-5>] [--llm <provider>] [--settings <path>]`
+Runs a TradingAgents analysis for the given symbol. Requires `tradingagents` configuration in settings.json.
+```bash
+tincan tradingagent U --date 2024-01-15
+tincan tradingagent AAPL --analysts market,news --depth 3 --llm minimax
+tincan tradingagent U
+```
+
+**Configuration (settings.json):**
+```json
+{
+  "tradingagents": {
+    "path": "/path/to/TradingAgents",
+    "results_path": "/path/to/results",
+    "default_analysts": ["market", "social", "news", "fundamentals"],
+    "default_depth": 2,
+    "default_llm": "minimax"
+  }
+}
+```
+
+**Output (results folder):**
+```
+results_path/
+├── <symbol>/
+│   └── <date>/
+│       ├── decision_<timestamp>.txt     # Just the decision (BUY/HOLD/SELL)
+│       ├── detail_report_<timestamp>.json  # Full analysis with all reports
+│       └── summary.json                 # Symbol, date, decision, timestamp
+```
+```
 ---
+
+
+**Sample outputs:**
+
+*summary.json:*
+```json
+{
+  "symbol": "U",
+  "date": "2026-04-09",
+  "decision": "HOLD",
+  "completed_at": "2026-04-09T12:13:15.215635"
+}
+```
+
+*decision_<timestamp>.txt:*
+```
+HOLD
+```
+
+*detail_report_<timestamp>.json:*
+```json
+{
+  "stock_info": { "name": "Unity Software Inc.", "ticker": "U", "price": "$21.99" },
+  "market_report": "...",
+  "news_report": "...",
+  "fundamentals_report": "...",
+  "investment_debate_state": { "bull_history": "...", "bear_history": "..." },
+  "risk_debate_state": { "aggressive_history": "...", "conservative_history": "..." },
+  "final_trade_decision": "HOLD"
+}
+```
 
 ## 🔧 Broker Configuration
 
@@ -310,7 +372,9 @@ TinCan/
 |   |-- Settings.cs
 |   |-- Signal.cs
 |   |-- StockLookup.cs
-|   `-- StockPrice.cs
+|   |-- StockPrice.cs
+|   |-- TradingAgentJob.cs
+|   `-- TradingAgentStatus.cs
 |-- Services/
 |   |-- AlpacaBrokerService.cs
 |   |-- FinnhubService.cs

@@ -147,6 +147,16 @@ tincan tradingagent U
 }
 ```
 
+**Output (results folder):**
+```
+results_path/
+├── <symbol>/
+│   └── <date>/
+│       ├── decision_<timestamp>.txt     # Just the decision (BUY/HOLD/SELL)
+│       ├── detail_report_<timestamp>.json  # Full analysis with all reports
+│       └── summary.json                 # Symbol, date, decision, timestamp
+```
+```
 ---
 
 ## 🔧 Broker Configuration

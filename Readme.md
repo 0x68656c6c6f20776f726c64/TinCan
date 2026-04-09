@@ -126,6 +126,35 @@ Cancels an open order.
 tincan cancel abc123 --settings ../stock_bot/settings.json
 ```
 
+### `tincan tradingagent <symbol> [--date <YYYY-MM-DD>] [--analysts <list>] [--depth <1-5>] [--llm <provider>] [--settings <path>] [--run-now]`
+Runs a TradingAgents analysis for the given symbol. Requires `tradingagents` configuration in settings.json.
+```bash
+tincan tradingagent U --date 2024-01-15
+tincan tradingagent AAPL --analysts market,news --depth 3 --llm minimax
+tincan tradingagent U --run-now
+```
+
+If `scheduler.tradingagent_time` is configured in settings.json, the job is scheduled for that time. Use `--run-now` to bypass the schedule and run immediately.
+
+**Configuration (settings.json):**
+```json
+{
+  "tradingagents": {
+    "path": "/path/to/TradingAgents",
+    "results_path": "/path/to/results",
+    "default_analysts": ["market", "social", "news", "fundamentals"],
+    "default_depth": 2,
+    "default_llm": "minimax"
+  },
+  "scheduler": {
+    "tradingagent_time": "08:30"
+  }
+}
+```
+
+**Required environment variable:**
+- `TA_TRADINGAGENTS_PATH` — must point to the TradingAgents directory
+
 ---
 
 ## 🔧 Broker Configuration
@@ -310,7 +339,9 @@ TinCan/
 |   |-- Settings.cs
 |   |-- Signal.cs
 |   |-- StockLookup.cs
-|   `-- StockPrice.cs
+|   |-- StockPrice.cs
+|   |-- TradingAgentJob.cs
+|   `-- TradingAgentStatus.cs
 |-- Services/
 |   |-- AlpacaBrokerService.cs
 |   |-- FinnhubService.cs
